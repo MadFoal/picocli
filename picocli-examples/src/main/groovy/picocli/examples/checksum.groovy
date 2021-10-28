@@ -13,7 +13,7 @@ class Checksum implements Callable<Integer> {
 
     @Parameters(arity = '1', paramLabel = 'FILE', description = 'The file(s) whose checksum to calculate.')
     File[] files
-
+    // continuing to see issues, possible groovy
     @Option(names = ['-a', '--algorithm'], description = ['MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,',
             '  or any other MessageDigest algorithm.'])
     String algorithm = 'MD5'
