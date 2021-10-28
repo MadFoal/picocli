@@ -16,7 +16,7 @@ public class Grades implements Runnable {
         @Parameters(index = "0") String name;
         @Parameters(index = "1") BigDecimal grade;
     }
-
+    // Left off working through testing features here
     @ArgGroup(exclusive = false, multiplicity = "1..*")
     List<StudentGrade> gradeList;
 
