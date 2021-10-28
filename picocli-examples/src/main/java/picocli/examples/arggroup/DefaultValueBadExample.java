@@ -8,6 +8,8 @@ import picocli.CommandLine.Option;
 @Command(name = "bad", description = "usage help shows the wrong default value")
 public class DefaultValueBadExample {
     @ArgGroup BadGroup badGroup;
+    
+    // running this to confirm usability
 
     public static void main(String[] args) {
         new CommandLine(new DefaultValueBadExample()).usage(System.out);
