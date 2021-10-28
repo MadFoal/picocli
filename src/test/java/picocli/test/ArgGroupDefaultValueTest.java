@@ -87,4 +87,6 @@ public class ArgGroupDefaultValueTest implements Runnable {
  *  During parsing we find that the required arguments are not processed, which
  *  leads to them being marked as null instead of their default values
  *
+ *
+ *  This default test case is not creating commands and required arguments correctly
  */
