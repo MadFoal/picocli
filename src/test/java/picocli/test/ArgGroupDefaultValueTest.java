@@ -28,7 +28,7 @@ public class ArgGroupDefaultValueTest implements Runnable {
         @ArgGroup(exclusive = true)
         private ArgGroupDefaultValueTest.OneOrTwo oneORtwo = new ArgGroupDefaultValueTest.OneOrTwo();
     }
-
+// integer issue, possibly 2
     public static class OneOrTwo {
 
         @ArgGroup(exclusive = false,
@@ -45,6 +45,24 @@ public class ArgGroupDefaultValueTest implements Runnable {
                         + "|@%n")
         public ArgGroupDefaultValueTest.GroupTwo two = new ArgGroupDefaultValueTest.GroupTwo();
     }
+    /*
+    public static class FourOrThree {
+
+        @ArgGroup(exclusive = true,
+                heading = "%n@|bold Group 4|@ %n%n"//
+                        + "@|italic " //
+                        + "Description of the group 4 ." //
+                        + "|@%n")
+        public ArgGroupDefaultValueTest.GroupOne one = new ArgGroupDefaultValueTest.GroupOne();
+
+        @ArgGroup(exclusive = true,
+                heading = "%n@|bold Group 3|@ %n%n"//
+                        + "@|italic " //
+                        + "Description of the group 3 ." //
+                        + "|@%n")
+        public ArgGroupDefaultValueTest.GroupTwo two = new ArgGroupDefaultValueTest.GroupTwo();
+    }
+     */
 
     public static class GroupOne {
         @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
