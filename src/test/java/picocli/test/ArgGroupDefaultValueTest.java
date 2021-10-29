@@ -7,10 +7,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
+/*
+
+
+ */
+
 @Command(name = "myCommand",
         mixinStandardHelpOptions = true,
         description = "A command with default value in section ?")
-
 public class ArgGroupDefaultValueTest implements Runnable {
     @ArgGroup(exclusive = false,
             heading = "%n@|italic " //
@@ -71,10 +75,18 @@ public class ArgGroupDefaultValueTest implements Runnable {
     }
 
     public static void main(String... args) {
-        ArgGroupDefaultValueTest ArgGroupDefaultValueTest = new ArgGroupDefaultValueTest();
-        int exitCode = new CommandLine(ArgGroupDefaultValueTest).execute(args);
+        ArgGroupDefaultValueTest argGroupDefaultValueTest = new ArgGroupDefaultValueTest();
+        int exitCode = new CommandLine(argGroupDefaultValueTest).execute(args);
 
         System.exit(exitCode);
     }
 
 }
+/*
+ *  Current issue appears to be related to how we handle the required arguments.
+ *  During parsing we find that the required arguments are not processed, which
+ *  leads to them being marked as null instead of their default values
+ *
+ *
+ *  This default test case is not creating commands and required arguments correctly
+ */
