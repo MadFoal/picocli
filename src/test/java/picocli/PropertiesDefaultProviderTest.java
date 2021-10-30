@@ -64,6 +64,7 @@ public class PropertiesDefaultProviderTest {
         expected.setProperty("ppp", "333");
         expected.setProperty("xxx", "444");
         expected.store(new FileOutputStream(f), "exported from test");
+        System.out.println("hello world");
 
         MyApp myApp = new MyApp();
         assertEquals(myApp.aaa, 0);
