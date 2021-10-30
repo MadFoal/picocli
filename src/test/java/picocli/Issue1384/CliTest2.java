@@ -1,4 +1,4 @@
-
+package picocli.Issue1384;
 
 import java.util.Arrays;
 
