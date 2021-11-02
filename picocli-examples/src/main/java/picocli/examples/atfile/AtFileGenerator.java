@@ -123,7 +123,7 @@ public class AtFileGenerator implements Callable<Integer> {
         if (args.length > 0) {
             System.exit(new CommandLine(new AtFileGenerator()).execute(args));
         } else {
-            test();
+           // test();
         }
     }
 
