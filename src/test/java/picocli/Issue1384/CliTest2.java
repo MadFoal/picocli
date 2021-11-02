@@ -29,7 +29,6 @@ public class CliTest2 implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Arguments: " + String.join(", ", Arrays.asList(args)));
 		int exitCode = new CommandLine(new CliTest2()).execute(args);
 		System.exit(exitCode);
 	}

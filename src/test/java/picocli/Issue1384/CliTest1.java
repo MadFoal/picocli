@@ -1,7 +1,5 @@
 package picocli.Issue1384;
 
-import java.util.Arrays;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -23,7 +21,6 @@ public class CliTest1 implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Arguments: " + String.join(", ", Arrays.asList(args)));
 		int exitCode = new CommandLine(new CliTest1()).execute(args);
 		System.exit(exitCode);
 	}
