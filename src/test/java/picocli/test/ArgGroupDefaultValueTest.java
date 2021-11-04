@@ -22,20 +22,7 @@ public class ArgGroupDefaultValueTest {
     }
 
     @Test
-    public void SimpleAllFilledTest() {
-        String[] a = new String[] {"-x", "x_test", "-2a", "2a_test", "-2b", "2b_test"};
-
-
-        ArgGroupDefaultValue argGroupDefaultValue = new ArgGroupDefaultValue();
-        String s = "x_test 2a_test 2b_test";
-        int exitCode = new CommandLine(argGroupDefaultValue).execute(a);
-        System.out.println(argGroupDefaultValue.returnString());
-        org.junit.Assert.assertEquals(s,argGroupDefaultValue.returnString());
-        org.junit.Assert.assertEquals(0,exitCode);
-    }
-
-    @Test
-    public void SimpleOneMissingTest() {
+    public void SimpleFirstHalfTest() {
         String[] a = new String[] {"-x", "x_test", "-2a", "2a_test"};
 
 
@@ -47,6 +34,21 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(0,exitCode);
     }
 
+    @Test
+    public void SimpleSecondHalfTest() {
+        String[] a = new String[] {"-x", "x_test", "-2b", "2b_test"};
+
+
+        ArgGroupDefaultValue argGroupDefaultValue = new ArgGroupDefaultValue();
+        String s = "x_test Default 2A 2b_test";
+        int exitCode = new CommandLine(argGroupDefaultValue).execute(a);
+        System.out.println(argGroupDefaultValue.returnString());
+        org.junit.Assert.assertEquals(s,argGroupDefaultValue.returnString());
+        org.junit.Assert.assertEquals(0,exitCode);
+    }
+
+
+    // BROKEN
     @Test
     public void SimpleTwoMissingTest() {
         String[] a = new String[] {"-x", "x_test"};

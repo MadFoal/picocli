@@ -11,24 +11,18 @@ public class ArgGroupDefaultValue implements Runnable {
             heading = "%n@|italic " //
                     + "Options to be used with group 1 OR group 2 options." //
                     + "|@%n")
-    public ArgGroupDefaultValue.OptXAndGroupOneOrGroupTwo optXAndGroupOneOrGroupTwo = new ArgGroupDefaultValue.OptXAndGroupOneOrGroupTwo();
+    public ArgGroupDefaultValue.OptXAndGroupTwo optXAndGroupTwo = new ArgGroupDefaultValue.OptXAndGroupTwo();
 
-    public static class OptXAndGroupOneOrGroupTwo {
+    public static class OptXAndGroupTwo {
         @Option(names = { "-x", "--option-x" }, required = true, defaultValue = "Default X", description = "option X")
         private String x;
 
-        @ArgGroup(exclusive = true)
-        private ArgGroupDefaultValue.OneOrTwo oneORtwo = new ArgGroupDefaultValue.OneOrTwo();
-    }
-
-    public static class OneOrTwo {
-
-        @ArgGroup(exclusive = false,
+        @ArgGroup(exclusive = true,
                 heading = "%n@|bold Group 2|@ %n%n"//
                         + "@|italic " //
                         + "Description of the group 2 ." //
                         + "|@%n")
-        public ArgGroupDefaultValue.GroupTwo two = new ArgGroupDefaultValue.GroupTwo();
+        private ArgGroupDefaultValue.GroupTwo groupTwo = new ArgGroupDefaultValue.GroupTwo();
     }
 
 
@@ -44,15 +38,15 @@ public class ArgGroupDefaultValue implements Runnable {
     public void run() {
 
         System.out.println();
-        System.out.println(" X = " + optXAndGroupOneOrGroupTwo.x);
-        System.out.println("2A = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        System.out.println("2B = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+        System.out.println(" X = " + optXAndGroupTwo.x);
+        System.out.println("2A = " + optXAndGroupTwo.groupTwo._2a);
+        System.out.println("2B = " + optXAndGroupTwo.groupTwo._2b);
 
     }
     public String returnString() {
-        String s = optXAndGroupOneOrGroupTwo.x + " "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a + " "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b;
+        String s = optXAndGroupTwo.x + " "
+                + optXAndGroupTwo.groupTwo._2a + " "
+                + optXAndGroupTwo.groupTwo._2b;
 
         /*String s = "\n X = " + optXAndGroupOneOrGroupTwo.x + "\n2A = "
                 + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a + "\n2B = "
