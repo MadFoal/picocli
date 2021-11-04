@@ -1,5 +1,7 @@
 package picocli.Issue1384;
 
+import java.util.Arrays;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -12,6 +14,8 @@ public class CliTest1 implements Runnable {
 	String param1;
 	@Parameters(index = "2", arity = "0..1", description = "parameter 2")
 	String param2;
+	@Parameters(paramLabel = "<word>", defaultValue = "hello, world",
+			description = "Words to be translated into ASCII art.")
 
 	@Override
 	public void run() {
@@ -21,7 +25,10 @@ public class CliTest1 implements Runnable {
 	}
 
 	public static void main(String[] args) {
+		System.out.println("**hello world args: " +args.length);
+		System.out.println("Arguments: " + String.join(", ", Arrays.asList(args)));
 		int exitCode = new CommandLine(new CliTest1()).execute(args);
+		System.out.println("**bye now");
 		System.exit(exitCode);
 	}
 }
