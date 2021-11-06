@@ -48,15 +48,7 @@ public class ArgGroupDefaultValue implements Runnable {
                 + optXAndGroupTwo.groupTwo._2a + " "
                 + optXAndGroupTwo.groupTwo._2b;
 
-        /*String s = "\n X = " + optXAndGroupOneOrGroupTwo.x + "\n2A = "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a + "\n2B = "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b + "\n";
-        /*
-        System.out.println();
-        System.out.println(" X = " + optXAndGroupOneOrGroupTwo.x);
-        System.out.println("2A = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        System.out.println("2B = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
-        */
+
         return s;
     }
 

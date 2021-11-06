@@ -31,6 +31,7 @@ public class ASCIIArt implements Runnable {
 	@Parameters(paramLabel = "<word>", defaultValue = "hello, world",
 			description = "Words to be translated into ASCII art.")
 	private String[] words = { "fun,", "fred" };
+
 	// 	Picocli will convert the command arguments to strongly typed values and inject values into the annotated fields
 
 	// 	Define your business logic in the run or call method of your class.
