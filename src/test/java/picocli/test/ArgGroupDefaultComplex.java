@@ -26,26 +26,11 @@ public class ArgGroupDefaultComplex implements Runnable {
     public static class OneOrTwo {
 
         @ArgGroup(exclusive = false,
-                heading = "%n@|bold Group 1|@ %n%n"//
-                        + "@|italic " //
-                        + "Description of the group 1 ." //
-                        + "|@%n")
-        public ArgGroupDefaultComplex.GroupOne one = new ArgGroupDefaultComplex.GroupOne();
-
-        @ArgGroup(exclusive = false,
-                heading = "%n@|bold Group 2|@ %n%n"//
-                        + "@|italic " //
-                        + "Description of the group 2 ." //
-                        + "|@%n")
+                heading = "%n@|bold Group 2|@ %n%n")//
+                    //    + "@|italic " //
+                     //   + "Description of the group 2 ." //
+                 //       + "|@%n")
         public ArgGroupDefaultComplex.GroupTwo two = new ArgGroupDefaultComplex.GroupTwo();
-    }
-
-    public static class GroupOne {
-        @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
-        private String _1a;
-
-        @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
-        private String _1b;
     }
 
     public static class GroupTwo {
@@ -61,27 +46,15 @@ public class ArgGroupDefaultComplex implements Runnable {
     public void run() {
         System.out.println();
         System.out.println(" X = " + optXAndGroupOneOrGroupTwo.x);
-        System.out.println("1A = " + optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
-        System.out.println("1B = " + optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
+
         System.out.println("2A = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
         System.out.println("2B = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
     }
     public String returnString() {
         String s = optXAndGroupOneOrGroupTwo.x + " "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.one._1a + " "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.one._1b + " "
+
                 + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a + " "
                 + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b;
-
-        /*String s = "\n X = " + optXAndGroupOneOrGroupTwo.x + "\n2A = "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a + "\n2B = "
-                + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b + "\n";
-        /*
-        System.out.println();
-        System.out.println(" X = " + optXAndGroupOneOrGroupTwo.x);
-        System.out.println("2A = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
-        System.out.println("2B = " + optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
-        */
         return s;
     }
     public static void main(String... args) {

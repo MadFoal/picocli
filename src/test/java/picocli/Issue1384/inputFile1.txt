@@ -1,0 +1,1 @@
+Annotate fields with the command line parameter names and description. Optionally implement Runnable or Callable to delegate error handling and requests for usage help or version help to picocli. For example:

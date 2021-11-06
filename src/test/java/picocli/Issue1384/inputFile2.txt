@@ -1,0 +1,1 @@
+Implement Runnable or Callable, and your command can be executed in one line of code. The example above uses the CommandLine.execute method to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call System.exit with the returned exit code to signal success or failure to their caller.

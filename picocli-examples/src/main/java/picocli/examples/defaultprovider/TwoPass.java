@@ -84,7 +84,7 @@ public class TwoPass {
     }
 
     // create some defaults
-    private static File createExampleProfileFile() throws IOException {
+    private static File createExampleProfileFile() {
         Properties profile = new Properties();
         profile.setProperty("a", "111111");
         profile.setProperty("bbb", "99999999");
