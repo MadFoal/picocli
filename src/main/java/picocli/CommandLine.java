@@ -13443,6 +13443,7 @@ public class CommandLine {
                     boolean canMatch = groupMatchContainer.canMatchPositionalParam(positionalParam);
                     System.out.println("***canMatch bool: " + canMatch);
                     if (!canMatch) {
+                        System.out.println("***canMatch false continue");
                         continue;
                     }
                 } else {
