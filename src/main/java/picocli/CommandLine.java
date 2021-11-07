@@ -12687,6 +12687,7 @@ public class CommandLine {
             }
 
             boolean canMatchPositionalParam(PositionalParamSpec positionalParam) {
+                System.out.println("****line 12690 canMatchPositionalParam: " + positionalParam);
                 boolean mayCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMinElements();
                 boolean mustCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMaxElements();
                 if (mustCreateNewMatch && isMaxMultiplicityReached()) {
@@ -13439,7 +13440,9 @@ public class CommandLine {
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
                     GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
-                    if (!groupMatchContainer.canMatchPositionalParam(positionalParam)) {
+                    boolean canMatch = groupMatchContainer.canMatchPositionalParam(positionalParam);
+                    System.out.println("***canMatch bool: " + canMatch);
+                    if (!canMatch) {
                         continue;
                     }
                 } else {

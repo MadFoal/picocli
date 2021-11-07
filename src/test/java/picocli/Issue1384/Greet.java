@@ -8,17 +8,28 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "Greet", header = "%n@|green Hello world demo|@")
+@Command(
+        name = "helloName",
+     //   header = "%n@|green Hello world demo|@",
+        description="Says hello to [name]"
+)
 class Greet implements Runnable {
 
-    @Option(names = {"-u", "--user"}, required = true, defaultValue = "Fred",description = "The user name.")
-    String userName;
+    @Parameters(index="0", description = "Name to print out")
+    private String name;
+    @Parameters(index = "0", arity = "1", description = "parameter 0")
+    String param0;
+    @Parameters(index = "1", arity = "0..1", description = "parameter 1")
+    String param1;
+    @Parameters(index = "2", arity = "0..1", description = "parameter 2")
+    String param2;
 
-    public void run() {
-        System.out.println("Hello, " + userName);
+    public static void main(String[] args) {
+        new CommandLine(new Greet()).execute(args);
     }
 
-    public static void main(String... args) {
-        CommandLine.run(new Greet(), System.err, args);
+    @Override
+    public void run() {
+        System.out.println("Hello, " + name);
     }
 }
