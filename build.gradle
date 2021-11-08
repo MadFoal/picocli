@@ -492,3 +492,5 @@ Release procedure:
 28. check modified files
 29. commit -m "Update master for next development cycle after release x.x (from branch x.x)"
 */
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8

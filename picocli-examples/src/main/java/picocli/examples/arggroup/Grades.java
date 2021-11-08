@@ -16,6 +16,14 @@ public class Grades implements Runnable {
         @Parameters(index = "0") String name;
         @Parameters(index = "1") BigDecimal grade;
     }
+    /*
+    @Parameters(index = "0", arity = "1", description = "parameter 0")
+	String param0;
+	@Parameters(index = "1", arity = "0..1", description = "parameter 1")
+	String param1;
+	@Parameters(index = "2", arity = "0..1", description = "parameter 2")
+	String param2;
+     */
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
     List<StudentGrade> gradeList;
@@ -32,6 +40,7 @@ public class Grades implements Runnable {
     }
 
     public static void main(String[] args) {
+        System.out.println("**grades test");
         int exitCode = new CommandLine(new Grades()).execute(args);
         System.exit(exitCode);
     }

@@ -91,8 +91,16 @@ public class TwoPass {
         profile.setProperty("long-option", "this is the default for long-option");
 
         // store them in a file
-        File path = File.createTempFile("twopass", ".properties");
-        profile.store(new FileWriter(path), "Default values for my-command");
+        File path;
+        try {
+            path = File.createTempFile("twopass", ".properties");
+            profile.store(new FileWriter(path), "Default values for my-command");
+        }
+        catch(IOException e) {
+            System.out.println("****file io exception");
+            e.printStackTrace();
+        }
+
         return path;
     }
 }
