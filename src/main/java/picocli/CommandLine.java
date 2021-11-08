@@ -12502,22 +12502,34 @@ public class CommandLine {
             }
 
             private GroupMatchContainer findOrCreateMatchingGroup(ArgSpec argSpec, CommandLine commandLine) {
+                System.out.println("**findOrCreateMatchingGroup argSpec: " + argSpec);
+                System.out.println("**findOrCreateMatchingGroup commandLine: " + commandLine);
                 ArgGroupSpec searchGroup = Assert.notNull(argSpec.group(), "group for " + argSpec);
+                System.out.println("**findOrCreateMatchingGroup searchGroup: " + searchGroup);
                 GroupMatchContainer container = this;
-                if (searchGroup == container.group()) { return container; }
+                if (searchGroup == container.group()) {
+                    System.out.println("**searchGroup == container.group() true");
+                    return container;
+                }
                 List<ArgGroupSpec> keys = new ArrayList<ArgGroupSpec>();
+                int i = 0;
                 while (searchGroup != null) {
+                    System.out.println("**searchGroup != null i: " + i++);
                     keys.add(searchGroup);
                     searchGroup = searchGroup.parentGroup();
                 }
+                System.out.println("**searchGroup after while: " + searchGroup);
                 Collections.reverse(keys);
+                i = 0;
                 for (ArgGroupSpec key : keys) {
+                    System.out.println("**ArgGroupSpec key : keys) i: " + i++);
                     GroupMatchContainer sub = container.lastMatch().matchedSubgroups().get(key);
                     if (sub == null) {
                         sub = createGroupMatchContainer(key, container, commandLine);
                     }
                     container = sub;
                 }
+                System.out.println("**About to return container in findOrCreateMatchingGroup");
                 return container;
             }
             private GroupMatchContainer createGroupMatchContainer(ArgGroupSpec group, GroupMatchContainer parent, CommandLine commandLine) {
@@ -13439,9 +13451,10 @@ public class CommandLine {
                 Range indexRange = positionalParam.index();
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
-                    GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
+                    GroupMatchContainer groupMatchContainer =
+                            parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
                     boolean canMatch = groupMatchContainer.canMatchPositionalParam(positionalParam);
-                    System.out.println("***canMatch bool: " + canMatch);
+                    System.out.println("***->canMatch bool: " + canMatch);
                     if (!canMatch) {
                         System.out.println("***canMatch false continue");
                         continue;
@@ -13452,6 +13465,7 @@ public class CommandLine {
                     }
                 }
                 Stack<String> argsCopy = copy(args);
+                System.out.println("***argsCopy argsCopy");
                 Range arity = positionalParam.arity();
                 if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
