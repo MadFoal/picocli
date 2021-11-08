@@ -13443,13 +13443,10 @@ public class CommandLine {
                     boolean canMatch = groupMatchContainer.canMatchPositionalParam(positionalParam);
                     System.out.println("***canMatch bool: " + canMatch);
                     if (!canMatch) {
-                        System.out.println("***canMatch false continue");
                         continue;
                     }
-                } else {
-                    if (!indexRange.contains(localPosition) || positionalParam.typedValueAtPosition.get(localPosition) != null) {
+                } else if (!indexRange.contains(localPosition) || positionalParam.typedValueAtPosition.get(localPosition) != null) {
                         continue;
-                    }
                 }
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
