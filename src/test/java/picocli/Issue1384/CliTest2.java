@@ -18,6 +18,14 @@ public class CliTest2 implements Runnable {
 		String param2;
 	}
 
+	private static class MySecondArgGroup {
+		@Parameters(index = "0", arity = "1", description = "parameter 0")
+		String param0;
+		@Parameters(index = "1", arity = "1", description = "parameter 1")
+		String param2;
+
+	}
+
 	@ArgGroup(order = 0, exclusive = false, multiplicity = "1")
 	private MyArgGroup argGroup;
 
