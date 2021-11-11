@@ -12386,8 +12386,8 @@ public class CommandLine {
                 Tracer tracer = commandSpec.commandLine.tracer;
                 GroupMatchContainer foundGroupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 GroupMatch match = foundGroupMatchContainer.lastMatch();
-                boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
-                boolean allowMultipleMatchesInGroup = greedy && argSpec.isMultiValue(); // https://github.com/remkop/picocli/issues/815
+                //boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
+                boolean allowMultipleMatchesInGroup = argSpec.isMultiValue(); //greedy && // https://github.com/remkop/picocli/issues/815
                 String elementDescription = ArgSpec.describe(argSpec, "=");
                 if (match.matchedMinElements() &&
                         (argSpec.required() || match.matchCount(argSpec) > 0) && !allowMultipleMatchesInGroup) {
@@ -13200,7 +13200,41 @@ public class CommandLine {
         private void applyDefaultValues(List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             parseResultBuilder.isInitializingDefaultValues = true;
             tracer.debug("Applying default values for command '%s'%n", CommandLine.this.commandSpec.qualifiedName());
+            int a = 0;
+            for (int i = 0; i < commandSpec.options.size(); i++) {
+                ArgSpec arg = commandSpec.options.get(i);
+                String temp = arg.getValue();
+                if (arg.getValue() == null) {
+                    a = a + 1;
+
+                    applyDefault(commandSpec.defaultValueProvider(), arg);
+                }
+
+            }
+
+
             for (ArgSpec arg : commandSpec.args()) {
+
+                // Need to add check for default values that are getting skipped
+                // Or we are incorrectly not setting the arg groups to null
+                a = 0; // Bug 1409
+
+                if (arg.group()!= null && !initialized.contains(arg) && arg.defaultValue()!= null) {  // arg.required() ){ // Bug 1409
+                    a = a + 1; // Bug 1409
+                    if (arg.inherited()) { // Bug 1409
+                        tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1)); // Bug 1409
+                    } else { // Bug 1409
+                        if (applyDefault(commandSpec.defaultValueProvider(), arg)) { // Bug 1409
+                            required.remove(arg); // Bug 1409
+
+                        }
+                    }
+                }
+                if (!initialized.contains(arg)) { // Bug 1409
+                    a = a + 1; // Bug 1409
+
+                }
+
                 if (arg.group() == null && !initialized.contains(arg)) {
                     if (arg.inherited()) {
                         tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1));
@@ -13240,6 +13274,10 @@ public class CommandLine {
                 String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
+
+
+
+
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             } else {
                 if (arg.typeInfo().isOptional()) {

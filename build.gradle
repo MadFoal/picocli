@@ -165,7 +165,7 @@ allprojects {
         bintrayApiKey     = System.getenv('BINTRAY_KEY')
         mavenOssUser      = System.getenv('MAVEN_OSS_USER')
         mavenOssPassword  = System.getenv('MAVEN_OSS_PASSWORD')
-        
+
         // pom configuration for MavenPublication, as per https://docs.gradle.org/current/userguide/publishing_maven.html#sec:modifying_the_generated_pom
         pomConfig = {
             licenses {
@@ -218,7 +218,7 @@ jar {
     multiRelease = true
 }
 
-Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version -> 
+Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version ->
         [(version) : 'https://docs.oracle.com/javase/8/docs/api/']
 }
 linkMap.remove(org.gradle.api.JavaVersion.VERSION_HIGHER)
@@ -386,8 +386,8 @@ task copyDocs(type: Copy) {
 allprojects {
     ext {
         bintrayDryRun     = false //[Default: false] Whether to run this as dry-run, without deploying
-        bintrayPublish    = true //[Default: false] Whether version should be auto published after an upload 
-        bintrayOverride   = false //[Default: false] Whether to override version artifacts already published   
+        bintrayPublish    = true //[Default: false] Whether version should be auto published after an upload
+        bintrayOverride   = false //[Default: false] Whether to override version artifacts already published
         mavenOssSync      = true //[Default: true] Determines whether to sync the version to Maven Central.
     }
 }
@@ -401,8 +401,8 @@ bintray {
     key  = bintrayApiKey
     publications = ['MyPublication']
     dryRun   = bintrayDryRun //[Default: false] Whether to run this as dry-run, without deploying
-    publish  = bintrayPublish //[Default: false] Whether version should be auto published after an upload    
-    override = bintrayOverride //[Default: false] Whether to override version artifacts already published    
+    publish  = bintrayPublish //[Default: false] Whether version should be auto published after an upload
+    override = bintrayOverride //[Default: false] Whether to override version artifacts already published
     //Package configuration. The plugin will use the repo and name properties to check if the package already exists. In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
     pkg {
         repo     = 'picocli'

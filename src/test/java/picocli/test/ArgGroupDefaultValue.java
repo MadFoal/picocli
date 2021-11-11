@@ -28,12 +28,12 @@ public class ArgGroupDefaultValue implements Runnable {
 
     public static class GroupTwo {
 
-        @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
-        private String _2a;
+        @Option(names = { "-2a", "--option-2a" }, required = true, defaultValue = "Default 2A", description = "option A of group 2")
+        private String _2a = "Default 2A";
 
 
-        @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
-        private String _2b;
+        @Option(names = { "-2b", "--option-2b" }, required = true, defaultValue = "Default 2B", description = "option B of group 2")
+        private String _2b = "Default 2B";
     }
     public void run() {
 
