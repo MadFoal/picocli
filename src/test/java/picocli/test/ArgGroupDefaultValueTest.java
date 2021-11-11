@@ -63,7 +63,7 @@ public class ArgGroupDefaultValueTest {
         ArgGroupDefaultValue argGroupDefaultValue = new ArgGroupDefaultValue();
         String s = "x_test Default 1B Default 2B";
 
-        s = "x_test null null";
+        //s = "x_test null null";
 
         int exitCode = new CommandLine(argGroupDefaultValue).execute(a);
         System.out.println(argGroupDefaultValue.returnString());

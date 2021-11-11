@@ -13201,6 +13201,9 @@ public class CommandLine {
             parseResultBuilder.isInitializingDefaultValues = true;
             tracer.debug("Applying default values for command '%s'%n", CommandLine.this.commandSpec.qualifiedName());
             int a = 0;
+            /*
+
+
             for (int i = 0; i < commandSpec.options.size(); i++) {
                 ArgSpec arg = commandSpec.options.get(i);
                 String temp = arg.getValue();
@@ -13212,13 +13215,13 @@ public class CommandLine {
 
             }
 
-
+            */
             for (ArgSpec arg : commandSpec.args()) {
 
                 // Need to add check for default values that are getting skipped
                 // Or we are incorrectly not setting the arg groups to null
                 a = 0; // Bug 1409
-
+                // should also check to see if arg's value is null
                 if (arg.group()!= null && !initialized.contains(arg) && arg.defaultValue()!= null) {  // arg.required() ){ // Bug 1409
                     a = a + 1; // Bug 1409
                     if (arg.inherited()) { // Bug 1409
