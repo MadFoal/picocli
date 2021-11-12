@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 
 public class ArgGroupDefaultValueTest {
 
-    /*
+
 
 
     @Test
@@ -23,7 +23,7 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(s, argGroupDefaultValue.returnString());
         org.junit.Assert.assertEquals(0, exitCode);
     }
-   */
+
     @Test
     public void SimpleFirstHalfTest() {
         String[] a = new String[] {"-x", "x_test", "-2a", "2a_test"};
@@ -34,10 +34,10 @@ public class ArgGroupDefaultValueTest {
         int exitCode = new CommandLine(argGroupDefaultValue).execute(a);
         System.out.println(argGroupDefaultValue.returnString());
         org.junit.Assert.assertEquals(s,argGroupDefaultValue.returnString());
-        //org.junit.Assert.assertEquals(0,exitCode);
+        org.junit.Assert.assertEquals(0,exitCode);
     }
 
-    /*
+
 
 
     @Test
@@ -53,7 +53,7 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(0,exitCode);
     }
 
- */
+
     // BROKEN
     @Test
     public void SimpleTwoMissingTest() {
@@ -61,9 +61,7 @@ public class ArgGroupDefaultValueTest {
 
 
         ArgGroupDefaultValue argGroupDefaultValue = new ArgGroupDefaultValue();
-        String s = "x_test Default 1B Default 2B";
-
-        //s = "x_test null null";
+        String s = "x_test Default 2A Default 2B";
 
         int exitCode = new CommandLine(argGroupDefaultValue).execute(a);
         System.out.println(argGroupDefaultValue.returnString());
@@ -72,7 +70,7 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(0,exitCode);
     }
 
-/*
+
 
 
     @Test
@@ -86,46 +84,11 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(0,exitCode);
     }
 
-    @Test
-    public void ComplexAllFilledTest() {
-        String[] a = new String[] {"-x", "x_test", "-1a", "1a_test", "-1b", "1b_test", "-2a", "2a_test", "-2b", "2b_test"};
-        ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
-        String s = "x_test 1a_test 1b_test 2a_test 2b_test";
-        int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
-        System.out.println(argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(s,argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(0,exitCode);
-    }
 
     @Test
-    public void ComplexOneDefaultMissingTest() {
-        String[] a = new String[] {"-x", "x_test", "-1a", "1a_test","-1b", "1b_test", "-2b", "2b_test"};
+    public void ComplexDefaultMissingTest() {
+        String[] a = new String[] {"-x", "x_test", "-1a", "1a_test","-1b", "1b_test"};
         // OMIT 2A
-        ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
-        String s = "x_test 1a_test 1b_test Default 2A 2b_test";
-        int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
-        System.out.println(argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(s,argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(0,exitCode);
-    }
-
-    @Test
-    public void ComplexOneNonDefaultMissingTest() {
-        String[] a = new String[] {"-x", "x_test", "-1a", "1a_test", "-2a", "2a_test", "-2b", "2b_test"};
-        // Omit 2b
-        ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
-        String s = "x_test 1a_test null 2a_test 2b_test";
-        int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
-        System.out.println(argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(s,argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(0,exitCode);
-    }
-
-    @Test
-    public void ComplexTwoDefaultMissingTest() {
-        String[] a = new String[] {"-x", "x_test", "-1a", "1a_test", "-1b", "1b_test"};
-
-
         ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
         String s = "x_test 1a_test 1b_test Default 2A Default 2B";
         int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
@@ -134,8 +97,9 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(0,exitCode);
     }
 
+
     @Test
-    public void ComplexTwoNonDefaultMissingTest() {
+    public void ComplexNonDefaultMissingTest() {
         String[] a = new String[] {"-x", "x_test", "-2a", "2a_test", "-2b", "2b_test"};
 
 
@@ -149,34 +113,9 @@ public class ArgGroupDefaultValueTest {
 
 
     @Test
-    public void ComplexOneDefaultMissingTestNoX() {
-        String[] a = new String[] {"-1a", "1a_test","-1b", "1b_test", "-2b", "2b_test"};
+    public void ComplexDefaultMissingTestNoX() {
+        String[] a = new String[] {"-1a", "1a_test","-1b", "1b_test"};
         // OMIT 2A
-        ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
-        String s = "Default X 1a_test 1b_test Default 2A 2b_test";
-        int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
-        System.out.println(argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(s,argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(0,exitCode);
-    }
-
-    @Test
-    public void ComplexOneNonDefaultMissingTestNoX() {
-        String[] a = new String[] {"-1a", "1a_test", "-2a", "2a_test", "-2b", "2b_test"};
-        // Omit 2b
-        ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
-        String s = "Default X 1a_test null 2a_test 2b_test";
-        int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
-        System.out.println(argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(s,argGroupDefaultComplex.returnString());
-        org.junit.Assert.assertEquals(0,exitCode);
-    }
-
-    @Test
-    public void ComplexTwoDefaultMissingTestNoX() {
-        String[] a = new String[] {"-1a", "1a_test", "-1b", "1b_test"};
-
-
         ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
         String s = "Default X 1a_test 1b_test Default 2A Default 2B";
         int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
@@ -186,10 +125,9 @@ public class ArgGroupDefaultValueTest {
     }
 
     @Test
-    public void ComplexTwoNonDefaultMissingTestNoX() {
+    public void ComplexNonDefaultMissingTestNoX() {
         String[] a = new String[] {"-2a", "2a_test", "-2b", "2b_test"};
-
-
+        // Omit 2b
         ArgGroupDefaultComplex argGroupDefaultComplex = new ArgGroupDefaultComplex();
         String s = "Default X null null 2a_test 2b_test";
         int exitCode = new CommandLine(argGroupDefaultComplex).execute(a);
@@ -197,18 +135,6 @@ public class ArgGroupDefaultValueTest {
         org.junit.Assert.assertEquals(s,argGroupDefaultComplex.returnString());
         org.junit.Assert.assertEquals(0,exitCode);
     }
-     */
 
 
 }
-/*
- *  Current issue appears to be related to how we handle the required arguments.
- *  During parsing we find that the required arguments are not processed, which
- *  leads to them being marked as null instead of their default values
- *
- *
- *
- *
- *
- *
- */

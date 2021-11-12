@@ -4045,4 +4045,159 @@ public class ArgGroupTest {
         System.setErr(err);
         assertEquals("", baos.toString());
     }
+
+    @Ignore
+    @Command(name = "CLI Test 2", mixinStandardHelpOptions = true)
+    static class Issue1384 {
+        static class MyArgGroup {
+            @Parameters(index = "0", arity = "1", description = "parameter 0")
+            String param0;
+            @Parameters(index = "1", arity = "0..1", description = "parameter 1")
+            String param1;
+            @Parameters(index = "2", arity = "0..1", description = "parameter 2")
+            String param2;
+        }
+
+        @ArgGroup(order = 0, exclusive = false, multiplicity = "1")
+        MyArgGroup argGroup;
+    }
+
+    @Test
+    public void testIssue1384() {
+        Issue1384 obj = new Issue1384();
+        new CommandLine(obj).parseArgs("1", "a", "b");
+        assertEquals(obj.argGroup.param0, "1");
+        assertEquals(obj.argGroup.param1, "a");
+        assertEquals(obj.argGroup.param2, "b");
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author remkop, madfoal
+     * @version 1
+     * @params null
+     * @returns null
+     *
+     */
+    @Command(name = "Issue-1409")
+    static class Issue1409 {
+
+        @ArgGroup(exclusive = false, heading = "%nOptions to be used with group 1 OR group 2 options.%n")
+        OptXAndGroupOneOrGroupTwo optXAndGroupOneOrGroupTwo = new OptXAndGroupOneOrGroupTwo();
+
+        static class OptXAndGroupOneOrGroupTwo {
+            @Option(names = { "-x", "--option-x" }, required = true, defaultValue = "Default X", description = "option X")
+            String x;
+
+            @ArgGroup(exclusive = true)
+            OneOrTwo oneORtwo = new OneOrTwo();
+        }
+
+        static class OneOrTwo {
+
+            @ArgGroup(exclusive = false, heading = "%nGroup 1%n%n")
+            GroupOne one = new GroupOne();
+
+            @ArgGroup(exclusive = false, heading = "%nGroup 2%n%n")
+            GroupTwo two = new GroupTwo();
+        }
+
+        static class GroupOne {
+            @Option(names = { "-1a", "--option-1a" },required=true,description = "option A of group 1")
+            String _1a;
+
+            @Option(names = { "-1b", "--option-1b" },required=true,description = "option B of group 1")
+            String _1b;
+        }
+
+        static class GroupTwo {
+            @Option(names = { "-2a", "--option-2a" },required=true, defaultValue = "Default 2A", description = "option A of group 2")
+            private String _2a = "Default 2A";
+
+            @Option(names = { "-2b", "--option-2b" },required=true, defaultValue = "Default 2B", description = "option B of group 2")
+            private String _2b = "Default 2B";
+        }
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author remkop, madfoal
+     * @version 1
+     * @params null
+     * @returns null
+     *
+     */
+    @Test
+    public void testIssue1409() {
+        Issue1409 obj = new Issue1409();
+        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE");
+        assertEquals("ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
+        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
+        assertEquals("Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
+        assertEquals("Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group one values, leaving
+     * the group two values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author madfoal
+     * @version 1
+     * @params null
+     * @returns null
+     *
+     */
+    @Test
+    public void testIssue1409_INIT_1() {
+        Issue1409 obj = new Issue1409();
+        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-1a=x", "-1b=z");
+
+        assertEquals("ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals("x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
+        assertEquals("z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
+        assertEquals("Default 2A", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
+        assertEquals("Default 2B", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+
+    }
+
+    /**
+     * Tests issue 1409 https://github.com/remkop/picocli/issues/1409
+     * This specific test supplies values to the group two values, leaving
+     * the group one values uninitialized.
+     * <p>
+     * The test verifies that x, 1A, 1B, 2A, and 2B values are correct after
+     * building the command using CommandLine.java and parsing the arguments.
+     * @author madfoal
+     * @version 1
+     * @params null
+     * @returns null
+     *
+     */
+    @Test
+    public void testIssue1409_INIT_2() {
+        Issue1409 obj = new Issue1409();
+        new CommandLine(obj).parseArgs("-x", "ANOTHER_VALUE", "-2a=x", "-2b=z");
+
+        assertEquals("ANOTHER_VALUE", obj.optXAndGroupOneOrGroupTwo.x);
+        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1a);
+        assertEquals(null, obj.optXAndGroupOneOrGroupTwo.oneORtwo.one._1b);
+        assertEquals("x", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2a);
+        assertEquals("z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two._2b);
+
+    }
 }

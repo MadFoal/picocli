@@ -145,7 +145,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.6.2-SNAPSHOT";
+    public static final String VERSION = "4.6.3-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private CommandSpec commandSpec;
@@ -3868,7 +3868,7 @@ public class CommandLine {
          * @since 4.3 */
         String splitSynopsisLabel() default "";
 
-      /**
+        /**
          * Set {@code hidden=true} if this option should not be included in the usage help message.
          * @return whether this option should be excluded from the usage documentation
          */
@@ -5641,7 +5641,7 @@ public class CommandLine {
             if (member.isAnnotationPresent(Option.class)) {
                 boolean zeroArgs = info.isBoolean() || (info.isMultiValue() && info.getAuxiliaryTypeInfos().get(0).isBoolean());
                 return zeroArgs ? Range.valueOf("0").unspecified(true)
-                                : Range.valueOf("1").unspecified(true);
+                        : Range.valueOf("1").unspecified(true);
             }
             if (info.isMultiValue()) {
                 return Range.valueOf("0..1").unspecified(true);
@@ -6412,7 +6412,7 @@ public class CommandLine {
              */
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
-                String actualName = validateSubcommandName(name, subSpec);
+                String actualName = validateSubcommandName(interpolator.interpolateCommandName(name), subSpec);
                 Tracer t = new Tracer();
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
                 String previousName = commands.getCaseSensitiveKey(actualName);
@@ -6422,7 +6422,7 @@ public class CommandLine {
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
                     if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
-                    previous = commands.put(alias, subCommandLine);
+                    previous = commands.put(interpolator.interpolate(alias), subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
@@ -7522,7 +7522,7 @@ public class CommandLine {
             /** Constant holding the default usage message width: <code>{@value}</code>. */
             public  final static int    DEFAULT_USAGE_WIDTH              = 80;
             private final static int    MINIMUM_USAGE_WIDTH              = 55;
-                    final static int    DEFAULT_USAGE_LONG_OPTIONS_WIDTH = 20;
+            final static int    DEFAULT_USAGE_LONG_OPTIONS_WIDTH = 20;
             private final static int    DEFAULT_SYNOPSIS_INDENT          = -1; // by default, fall back to aligning to the synopsis heading
             private final static double DEFAULT_SYNOPSIS_AUTO_INDENT_THRESHOLD = 0.5;
             private final static double MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD     = 0.9;
@@ -7695,8 +7695,8 @@ public class CommandLine {
                 final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                         ? new String[] {"cmd.exe", "/c", "mode con"}
                         : (Help.Ansi.isMac()
-                                ? new String[] {"tput", "cols"}
-                                : new String[] {"stty", "-a", "-F", "/dev/tty"});
+                        ? new String[] {"tput", "cols"}
+                        : new String[] {"stty", "-a", "-F", "/dev/tty"});
                 Thread t = new Thread(new Runnable() {
                     public void run() {
                         Process proc = null;
@@ -7720,8 +7720,8 @@ public class CommandLine {
                             Pattern pattern = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                                     ? Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL)
                                     : (Help.Ansi.isMac()
-                                            ? Pattern.compile("(\\s*)(\\d+)\\s*")
-                                            : Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL));
+                                    ? Pattern.compile("(\\s*)(\\d+)\\s*")
+                                    : Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL));
                             Matcher matcher = pattern.matcher(txt);
                             if (matcher.matches()) {
                                 size.set(Integer.parseInt(matcher.group(2)));
@@ -8787,7 +8787,7 @@ public class CommandLine {
             /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
              * or {@code null} if it was not.
              * @see Option#scope()
-             * @since 4.6.2-SNAPSHOT */
+             * @since 4.6.3-SNAPSHOT */
             public ArgSpec root() { return root; }
 
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
@@ -9425,7 +9425,7 @@ public class CommandLine {
                 /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
                  * or {@code null} if it was not.
                  * @see Option#scope()
-                 * @since 4.6.2-SNAPSHOT */
+                 * @since 4.6.3-SNAPSHOT */
                 public ArgSpec root() { return root; }
 
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
@@ -9568,7 +9568,7 @@ public class CommandLine {
 
                 /**
                  * Sets the root object for this inherited option, and returns this builder.
-                 * @since 4.6.2-SNAPSHOT */
+                 * @since 4.6.3-SNAPSHOT */
                 public T root(ArgSpec root)                  { this.root = root ; return self(); }
 
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
@@ -12386,8 +12386,8 @@ public class CommandLine {
                 Tracer tracer = commandSpec.commandLine.tracer;
                 GroupMatchContainer foundGroupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 GroupMatch match = foundGroupMatchContainer.lastMatch();
-                //boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
-                boolean allowMultipleMatchesInGroup = argSpec.isMultiValue(); //greedy && // https://github.com/remkop/picocli/issues/815
+                boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
+                boolean allowMultipleMatchesInGroup = greedy && argSpec.isMultiValue(); // https://github.com/remkop/picocli/issues/815
                 String elementDescription = ArgSpec.describe(argSpec, "=");
                 if (match.matchedMinElements() &&
                         (argSpec.required() || match.matchCount(argSpec) > 0) && !allowMultipleMatchesInGroup) {
@@ -13200,44 +13200,7 @@ public class CommandLine {
         private void applyDefaultValues(List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             parseResultBuilder.isInitializingDefaultValues = true;
             tracer.debug("Applying default values for command '%s'%n", CommandLine.this.commandSpec.qualifiedName());
-            int a = 0;
-            /*
-
-
-            for (int i = 0; i < commandSpec.options.size(); i++) {
-                ArgSpec arg = commandSpec.options.get(i);
-                String temp = arg.getValue();
-                if (arg.getValue() == null) {
-                    a = a + 1;
-
-                    applyDefault(commandSpec.defaultValueProvider(), arg);
-                }
-
-            }
-
-            */
             for (ArgSpec arg : commandSpec.args()) {
-
-                // Need to add check for default values that are getting skipped
-                // Or we are incorrectly not setting the arg groups to null
-                a = 0; // Bug 1409
-                // should also check to see if arg's value is null
-                if (arg.group()!= null && !initialized.contains(arg) && arg.defaultValue()!= null) {  // arg.required() ){ // Bug 1409
-                    a = a + 1; // Bug 1409
-                    if (arg.inherited()) { // Bug 1409
-                        tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1)); // Bug 1409
-                    } else { // Bug 1409
-                        if (applyDefault(commandSpec.defaultValueProvider(), arg)) { // Bug 1409
-                            required.remove(arg); // Bug 1409
-
-                        }
-                    }
-                }
-                if (!initialized.contains(arg)) { // Bug 1409
-                    a = a + 1; // Bug 1409
-
-                }
-
                 if (arg.group() == null && !initialized.contains(arg)) {
                     if (arg.inherited()) {
                         tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1));
@@ -13277,10 +13240,6 @@ public class CommandLine {
                 String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-
-
-
-
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             } else {
                 if (arg.typeInfo().isOptional()) {
@@ -14437,8 +14396,8 @@ public class CommandLine {
         }
         private String createUserInputDebugString(ArgSpec argSpec, char[] result, String name) {
             return argSpec.echo() ?
-                String.format("User entered %s for %s.%n", new String(result), name) :
-                String.format("User entered %d characters for %s.%n", result.length, name);
+                    String.format("User entered %s for %s.%n", new String(result), name) :
+                    String.format("User entered %d characters for %s.%n", result.length, name);
         }
         char[] readPassword(String prompt) {
             try {
@@ -17123,7 +17082,7 @@ public class CommandLine {
                         ", errorStyles=" + errorStyles +
                         ", stackTraceStyles=" + stackTraceStyles +
                         ", customMarkupMap=" + markupMap +
-                "]";
+                        "]";
             }
 
             /**
