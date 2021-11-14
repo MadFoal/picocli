@@ -471,7 +471,7 @@ public class ArgGroupTest {
             fail("Expected exception");
         } catch (InitializationException ex) {
             assertEquals("ArgGroup has no options or positional parameters, and no subgroups: " +
-                    "FieldBinding(" + Invalid.class.getName() + " " + app.getClass().getName() + ".invalid) in " +
+                            "FieldBinding(" + Invalid.class.getName() + " " + app.getClass().getName() + ".invalid) in " +
                             app.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(app))
                     , ex.getMessage());
         }
@@ -1588,7 +1588,7 @@ public class ArgGroupTest {
         try {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-x=2", "-x=3");
             fail("Expected exception");
-        //} catch (CommandLine.MaxValuesExceededException ex) {
+            //} catch (CommandLine.MaxValuesExceededException ex) {
             //assertEquals("Error: Group: (-x=<x> | -y=<y>) can only be specified 1 times but was matched 3 times.", ex.getMessage());
         } catch (MutuallyExclusiveArgsException ex) {
             assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
