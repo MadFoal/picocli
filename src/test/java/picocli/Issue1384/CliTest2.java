@@ -18,30 +18,6 @@ public class CliTest2 implements Runnable {
 		String param2;
 	}
 
-	private static class MySecondArgGroup {
-		@Parameters(index = "0", arity = "1", description = "parameter 0")
-		String param0;
-		@Parameters(index = "1", arity = "1", description = "parameter 1")
-		String param2;
-
-	}
-
-    private static class MyThirdArgGroupWithDups {
-        @Parameters(index = "0", arity = "1", description = "parameter 0")
-        String param0;
-        @Parameters(index = "1", arity = "1", description = "parameter 1")
-        String param2;
-		@Parameters(index = "0", arity = "1", description = "parameter 0")
-		String param3;
-		@Parameters(index = "1", arity = "1", description = "parameter 1")
-		String param4;
-		@Parameters(index = "0", arity = "1", description = "parameter 0")
-		String param5;
-		@Parameters(index = "1", arity = "1", description = "parameter 1")
-		String param6;
-
-    }
-
 	@ArgGroup(order = 0, exclusive = false, multiplicity = "1")
 	private MyArgGroup argGroup;
 

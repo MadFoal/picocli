@@ -4061,14 +4061,20 @@ public class ArgGroupTest {
         MyArgGroup argGroup;
     }
 
-    @Ignore
+
     @Test
     public void testIssue1384() {
+        System.out.println("***testIssue1384");
         Issue1384 obj = new Issue1384();
+        System.out.println("***testIssue1384 object made");
         new CommandLine(obj).parseArgs("1", "a", "b");
+        System.out.println("***testIssue1384");
         assertEquals(obj.argGroup.param0, "1");
+        System.out.println("***testIssue1384");
         assertEquals(obj.argGroup.param1, "a");
+        System.out.println("***testIssue1384");
         assertEquals(obj.argGroup.param2, "b");
+        System.out.println("***ender testIssue1384");
     }
 
     @Command(name = "Issue-1409")

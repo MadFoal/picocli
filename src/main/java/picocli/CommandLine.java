@@ -9965,6 +9965,7 @@ public class CommandLine {
             /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private PositionalParamSpec(Builder builder) {
                 super(builder);
+                System.out.println("***PositionalParamSpec");
                 if (builder.index == null) {
                     index = Range.defaultParameterIndex(typeInfo);
                 } else {
@@ -12502,6 +12503,7 @@ public class CommandLine {
             }
 
             private GroupMatchContainer findOrCreateMatchingGroup(ArgSpec argSpec, CommandLine commandLine) {
+                System.out.println("***GroupMatchContainer findOrCreateMatchingGroup");
                 ArgGroupSpec searchGroup = Assert.notNull(argSpec.group(), "group for " + argSpec);
                 GroupMatchContainer container = this;
                 if (searchGroup == container.group()) { return container; }
@@ -12687,6 +12689,7 @@ public class CommandLine {
             }
 
             boolean canMatchPositionalParam(PositionalParamSpec positionalParam) {
+                System.out.println("***command line canMatchPositionalParam: " + positionalParam);
                 boolean mayCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMinElements();
                 boolean mustCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMaxElements();
                 if (mustCreateNewMatch && isMaxMultiplicityReached()) {
@@ -12696,9 +12699,11 @@ public class CommandLine {
                 int accumulatedPosition = matches.isEmpty() ? 0 : lastMatch().position;
                 int localPosition = accumulatedPosition - startPosition;
                 if (mayCreateNewMatch) {
+                    System.out.println("***cl mayCreateNewMatch: " + mayCreateNewMatch);
                     int positionalParamCount = positionalParam.group().localPositionalParamCount();
                     if (positionalParamCount != 0) { localPosition %= positionalParamCount; } // #1213 prevent ArithmeticException: / by zero
                 }
+                System.out.println("***command line canMatchPositionalParam before return");
                 return positionalParam.index().contains(localPosition) && !lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
             }
         }
@@ -13440,6 +13445,7 @@ public class CommandLine {
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
                     GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
                     if (!groupMatchContainer.canMatchPositionalParam(positionalParam)) {
+                        System.out.println("***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true");
                         continue;
                     }
                 } else {
