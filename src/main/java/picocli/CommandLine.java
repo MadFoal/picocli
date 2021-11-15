@@ -12690,21 +12690,30 @@ public class CommandLine {
 
             boolean canMatchPositionalParam(PositionalParamSpec positionalParam) {
                 System.out.println("***command line canMatchPositionalParam: " + positionalParam);
-                boolean mayCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMinElements();
-                boolean mustCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMaxElements();
-                if (mustCreateNewMatch && isMaxMultiplicityReached()) {
+                boolean matchesEmpty = matches.isEmpty();
+                boolean lastMatchMinElements = lastMatch().matchedMinElements();
+                boolean lastMatchMaxElements = lastMatch().matchedMaxElements();
+                boolean mayCreateNewMatch = !matchesEmpty && lastMatchMinElements;
+                boolean mustCreateNewMatch = !matchesEmpty && lastMatchMaxElements;
+                boolean maxMultiplicityReached = isMaxMultiplicityReached();
+                if (mustCreateNewMatch && maxMultiplicityReached) {
                     return false;
                 }
-                int startPosition = matches.isEmpty() ? 0 : lastMatch().startPosition;
+                int lastMatchStartPosition = lastMatch().startPosition;
+                int startPosition = matchesEmpty ? 0 : lastMatchStartPosition;
                 int accumulatedPosition = matches.isEmpty() ? 0 : lastMatch().position;
                 int localPosition = accumulatedPosition - startPosition;
                 if (mayCreateNewMatch) {
                     System.out.println("***cl mayCreateNewMatch: " + mayCreateNewMatch);
                     int positionalParamCount = positionalParam.group().localPositionalParamCount();
-                    if (positionalParamCount != 0) { localPosition %= positionalParamCount; } // #1213 prevent ArithmeticException: / by zero
+                    if (positionalParamCount != 0) {
+                        localPosition %= positionalParamCount;
+                    } // #1213 prevent ArithmeticException: / by zero
                 }
                 System.out.println("***command line canMatchPositionalParam before return");
-                return positionalParam.index().contains(localPosition) && !lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
+                boolean doesContain = positionalParam.index().contains(localPosition);
+                boolean hasMatchedPosition = lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
+                return doesContain && !hasMatchedPosition;
             }
         }
 

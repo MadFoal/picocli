@@ -17,6 +17,7 @@ public class CliTest1 implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("***------------runrunrunrunrun");
 		System.out.println("param0: " + param0);
 		System.out.println("param1: " + param1);
 		System.out.println("param2: " + param2);
