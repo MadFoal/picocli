@@ -13464,16 +13464,29 @@ public class CommandLine {
                 }
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
-                if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);}
-                if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
+                boolean tracerDebug = tracer.isDebug();
+                if (tracer.isDebug()) {
+                    tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n",
+                            positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);
+                }
+                boolean assertNoMiss = assertNoMissingParameters(positionalParam, arity, argsCopy);
+                if (!assertNoMiss) {
+                    System.out.println("***assertNoMiss -> about to break");
+                    break;
+                } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted, arity, argsCopy, initialized, "args[" + indexRange.internalToString() + "] at position " + localPosition);
+                String argDescription = "args[" + indexRange.internalToString() + "] at position " + localPosition;
+                int actuallyConsumed =
+                        applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted,
+                                arity, argsCopy, initialized, argDescription);
+                int argsCopySize = argsCopy.size();
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
                     interactiveConsumed = this.interactiveCount - originalInteractiveCount;
                 }
-                if (positionalParam.group() == null) { // don't update the command-level position for group args
+                if (positionalParam.group() == null) { // dont update the command-level position for group args
+                    System.out.println("***dont update: " + "dont update the command-level position for group args");
                     argsConsumed = Math.max(argsConsumed, count);
                 } else {
                     final int updatedPosition = localPosition + count;
@@ -13482,21 +13495,28 @@ public class CommandLine {
                         public void run() {
                             if (groupMatchContainer != null) {
                                 groupMatchContainer.lastMatch().position = updatedPosition;
-                                if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", groupMatchContainer.lastMatch().position, groupMatchContainer);}
+                                if (tracer.isDebug()) {
+                                    tracer.debug("Updated group position to %s for group %s.%n", groupMatchContainer.lastMatch().position, groupMatchContainer);
+                                }
                             }
                         }
                     });
                     consumedByGroup = Math.max(consumedByGroup, count);
                 }
                 while (parseResultBuilder.nowProcessing.size() > originalNowProcessingSize + count) {
-                    parseResultBuilder.nowProcessing.remove(parseResultBuilder.nowProcessing.size() - 1);
+                    int temp = parseResultBuilder.nowProcessing.size() - 1;
+                    parseResultBuilder.nowProcessing.remove(temp);
                 }
             }
             // remove processed args from the stack
             int maxConsumed = Math.max(consumedByGroup, argsConsumed);
-            for (int i = 0; i < maxConsumed; i++) { args.pop(); }
+            for (int i = 0; i < maxConsumed; i++) {
+                args.pop();
+            }
             position += argsConsumed + interactiveConsumed;
-            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
+            if (tracer.isDebug()) {
+                tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);
+            }
             for (Runnable task : bookKeeping) { task.run(); }
             if (consumedByGroup == 0 && argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArgument(args); // this gives error msg: "Unmatched argument at index 1: 'val2'"
