@@ -23,10 +23,11 @@ public class CliTest2 implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("***------------runrunrunrunrun");
+		System.out.println("***------------runrunrunrunrunrunrunrunrunrun");
 		System.out.println("param0: " + argGroup.param0);
 		System.out.println("param1: " + argGroup.param1);
 		System.out.println("param2: " + argGroup.param2);
+		System.out.println("***------------done done done");
 	}
 
 	public static void main(String[] args) {
