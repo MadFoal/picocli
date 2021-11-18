@@ -1,14 +1,12 @@
 package picocli.Issue1384;
 
-import java.util.Arrays;
-
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "Issue 1384 Negative Test", mixinStandardHelpOptions = true)
-public class Issue1384_NegativeTest implements Runnable {
+@Command(name = "Issue 1384 Bug Test", mixinStandardHelpOptions = true)
+public class Issue1384_bugTest implements Runnable {
 	private static class MyArgGroup {
 		@Parameters(index = "0", arity = "1", description = "parameter 0")
 		String parameter0;
@@ -29,15 +27,15 @@ public class Issue1384_NegativeTest implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		int exitCode = new CommandLine(new CliTest2()).execute(args);
-		System.exit(exitCode);
+		int result = new CommandLine(new Issue1384_bugTest()).execute(args);
+		System.exit(result);
 	}
 
 	private static void printArray(String[] arg){
-		int c = 0;
+		int index = 0;
 		for (String s : arg)
 		{
-			System.out.println("***Index: " + c++ + "val: " + s);
+			System.out.println("***index: " + index++ + " val: " + s);
 		}
 	}
 }
