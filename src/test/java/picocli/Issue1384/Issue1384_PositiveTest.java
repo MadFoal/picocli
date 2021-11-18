@@ -4,8 +4,8 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "CLI Test 1", mixinStandardHelpOptions = true)
-public class CliTest1 implements Runnable {
+@Command(name = "Issue 1384 Positive Test", mixinStandardHelpOptions = true)
+public class Issue1384_PositiveTest implements Runnable {
 	@Parameters(index = "0", arity = "1", description = "parameter 0")
 	String parameter0;
 	@Parameters(index = "1", arity = "0..1", description = "parameter 1")
