@@ -1,0 +1,201 @@
+> Task :CliTest2.main() FAILED
+***add group match
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***add group match
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***cl mayCreateNewMatch is false
+***has matched value
+***command line canMatchPositionalParam before return
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={}
+****beforeMatchingGroupElement
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=one}
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=one}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=one}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=one}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=one}
+****beforeMatchingGroupElement
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+****beforeMatchingGroupElement tracer new group: picocli.CommandLine$Tracer@2805d709
+***add group match
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***add group match
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={}
+*** ArgGroupSpec group()
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass (file:/C:/Users/Default.MSI/.gradle/caches/modules-2/files-2.1/org.codehaus.groovy/groovy-all/2.4.10/4660c69a6fb68c1507d09e3de01e56bc87ffd85d/groovy-all-2.4.10.jar) to method java.lang.Object.finalize()
+WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+Error:
+expected only one match but got (<param0> [<param1>] [<param2>])={params[0]=one}
+and (<param0> [<param1>] [<param2>])={params[0]=two} and
+(<param0> [<param1>] [<param2>])={params[0]=three}
+
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=two}
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=two}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=two}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=two}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=two}
+****beforeMatchingGroupElement
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+****beforeMatchingGroupElement tracer new group: picocli.CommandLine$Tracer@2805d709
+***add group match
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***add group match
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={}
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=three}
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=three}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true
+*** ArgGroupSpec group()
+***ArgGroupSpec key: ArgGroup[exclusive=false, multiplicity=1, validate=true, order=0, args=[<param0>, <param1>, <param2>], headingKey=null, heading=null, subgroups=[]]
+***findOrCreateMatchingGroup  container: (<param0> [<param1>] [<param2>])={params[0]=three}
+***command line canMatchPositionalParam: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: false
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param2
+***has matchedFully allRequired: true
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param0
+***has matchedFully ArgSpec: field String picocli.Issue1384.CliTest2$MyArgGroup.param1
+***cl mayCreateNewMatch: true
+***cl positionalParamCount: 1
+***has matched value
+***command line canMatchPositionalParam before return
+***if !groupMatchContainer.canMatchPositionalParam(positionalParam) is true
+*** ArgGroupSpec group()
+*** ArgGroupSpec group()
+Usage: CLI Test 2 [-hV] (<param0> [<param1>] [<param2>])
+      <param0>     parameter 0
+      [<param1>]   parameter 1
+      [<param2>]   parameter 2
+  -h, --help       Show this help message and exit.
+  -V, --version    Print version information and exit.

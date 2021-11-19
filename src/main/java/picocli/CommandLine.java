@@ -9965,7 +9965,6 @@ public class CommandLine {
             /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private PositionalParamSpec(Builder builder) {
                 super(builder);
-                System.out.println("***PositionalParamSpec");
                 if (builder.index == null) {
                     index = Range.defaultParameterIndex(typeInfo);
                 } else {
@@ -12390,15 +12389,19 @@ public class CommandLine {
                 boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
                 boolean allowMultipleMatchesInGroup = greedy && argSpec.isMultiValue(); // https://github.com/remkop/picocli/issues/815
                 String elementDescription = ArgSpec.describe(argSpec, "=");
+                System.out.println("****beforeMatchingGroupElement");
+               boolean fred = false;
                 if (match.matchedMinElements() &&
                         (argSpec.required() || match.matchCount(argSpec) > 0) && !allowMultipleMatchesInGroup) {
                     // we need to create a new match; if maxMultiplicity has been reached, we need to add a new GroupMatchContainer.
                     String previousMatch = argSpec.required() ? "is required" : "has already been matched";
                     tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s %s in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription, previousMatch);
+                    System.out.println("****beforeMatchingGroupElement tracer new group: " + tracer);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
                     this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
-                } else if (match.matchCount(argSpec) > 0 && !allowMultipleMatchesInGroup) {
+                } else if (fred || match.matchCount(argSpec) > 0 && !allowMultipleMatchesInGroup) {
                     tracer.info("GroupMatch %s is incomplete: its mandatory elements are not all matched. (User object: %s.) However, %s has already been matched in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription);
+                    System.out.println("****beforeMatchingGroupElement tracer else new group: " + tracer);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
                     this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 }
@@ -12406,6 +12409,7 @@ public class CommandLine {
         }
 
         static class GroupValidationResult {
+
             static final GroupValidationResult SUCCESS_PRESENT = new GroupValidationResult(Type.SUCCESS_PRESENT);
             static final GroupValidationResult SUCCESS_ABSENT = new GroupValidationResult(Type.SUCCESS_ABSENT);
             enum Type {
@@ -12415,22 +12419,37 @@ public class CommandLine {
             Type type;
             ParameterException exception;
 
-            GroupValidationResult(Type type) { this.type = type; }
+            GroupValidationResult(Type type) {
+                this.type = type;
+            }
             GroupValidationResult(Type type, ParameterException exception) {
                 this.type = type;
                 this.exception = exception;
             }
             static GroupValidationResult extractBlockingFailure(List<GroupValidationResult> set) {
+                System.out.println("***GroupValidationResult extractBlockingFailure new group");
                 for (GroupValidationResult element : set) {
                     if (element.blockingFailure()) { return element; }
                 }
                 return null;
             }
             /** FAILURE_PRESENT or FAILURE_PARTIAL */
-            boolean blockingFailure() { return type == Type.FAILURE_PRESENT || type == Type.FAILURE_PARTIAL; }
-            boolean present()         { return type == Type.SUCCESS_PRESENT /*|| this == Type.FAILURE_PRESENT*/; }
-            boolean success()         { return type == Type.SUCCESS_ABSENT  || type == Type.SUCCESS_PRESENT; }
-            public String toString()  { return type + (exception == null ? "" : ": " + exception.getMessage());}
+            boolean blockingFailure() {
+                System.out.println("***GroupValidationResult blockingFailure ");
+                return type == Type.FAILURE_PRESENT || type == Type.FAILURE_PARTIAL;
+            }
+            boolean present()         {
+                System.out.println("***GroupValidationResult present");
+                return type == Type.SUCCESS_PRESENT /*|| this == Type.FAILURE_PRESENT*/;
+            }
+            boolean success()         {
+                System.out.println("***GroupValidationResult success");
+                return type == Type.SUCCESS_ABSENT  || type == Type.SUCCESS_PRESENT;
+            }
+            public String toString()  {
+                System.out.println("***GroupValidationResult toString");
+                return type + (exception == null ? "" : ": " + exception.getMessage());
+            }
         }
 
         /** Provides information about an {@link ArgGroup} that was matched on the command line.
@@ -12444,6 +12463,7 @@ public class CommandLine {
          * </p>
          * @since 4.0 */
         public static class GroupMatchContainer {
+
             private final ArgGroupSpec group;
             private GroupMatchContainer parentContainer;
             private final List<ArgGroupSpec> unmatchedSubgroups = new ArrayList<ArgGroupSpec>();
@@ -12453,7 +12473,10 @@ public class CommandLine {
             GroupMatchContainer(ArgGroupSpec group, CommandLine cmd) { this.group = group; addMatch(cmd);}
 
             /** Returns the {@code ArgGroupSpec} whose matches are captured in this {@code GroupMatchContainer}. */
-            public ArgGroupSpec group() { return group; }
+            public ArgGroupSpec group() {
+                System.out.println("*** ArgGroupSpec group()");
+                return group;
+            }
 //            /** Returns the {@code GroupMatchContainer} of the parent {@code ArgGroupSpec}, or {@code null} if this group has no parent. */
 //            public GroupMatchContainer parentContainer() { return parentContainer; }
             /** Returns the list of {@code GroupMatch} instances: {@code ArgGroupSpec}s with a multiplicity greater than one may be matched multiple times. */
@@ -12468,6 +12491,7 @@ public class CommandLine {
                     if (group != null) {
                         tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).%n", this, group.id(), group.synopsisUnit());
                     }
+                    System.out.println("***add group match");
                     matches.add(new GroupMatch(this));
                     if (group == null) { return; }
                 }
@@ -12503,23 +12527,28 @@ public class CommandLine {
             }
 
             private GroupMatchContainer findOrCreateMatchingGroup(ArgSpec argSpec, CommandLine commandLine) {
-                System.out.println("***GroupMatchContainer findOrCreateMatchingGroup");
                 ArgGroupSpec searchGroup = Assert.notNull(argSpec.group(), "group for " + argSpec);
                 GroupMatchContainer container = this;
-                if (searchGroup == container.group()) { return container; }
-                List<ArgGroupSpec> keys = new ArrayList<ArgGroupSpec>();
-                while (searchGroup != null) {
-                    keys.add(searchGroup);
-                    searchGroup = searchGroup.parentGroup();
-                }
-                Collections.reverse(keys);
-                for (ArgGroupSpec key : keys) {
-                    GroupMatchContainer sub = container.lastMatch().matchedSubgroups().get(key);
-                    if (sub == null) {
-                        sub = createGroupMatchContainer(key, container, commandLine);
+                if (searchGroup == container.group()) {
+                    System.out.println("***searchGroup == container.group");
+                    //return container;
+                } else {
+                    List<ArgGroupSpec> keys = new ArrayList<ArgGroupSpec>();
+                    while (searchGroup != null) {
+                        keys.add(searchGroup);
+                        searchGroup = searchGroup.parentGroup();
                     }
-                    container = sub;
+                    Collections.reverse(keys);
+                    for (ArgGroupSpec key : keys) {
+                        System.out.println("***ArgGroupSpec key: "+key);
+                        GroupMatchContainer sub = container.lastMatch().matchedSubgroups().get(key);
+                        if (sub == null) {
+                            sub = createGroupMatchContainer(key, container, commandLine);
+                        }
+                        container = sub;
+                    }
                 }
+                System.out.println("***findOrCreateMatchingGroup  container: " + container);
                 return container;
             }
             private GroupMatchContainer createGroupMatchContainer(ArgGroupSpec group, GroupMatchContainer parent, CommandLine commandLine) {
@@ -12690,30 +12719,29 @@ public class CommandLine {
 
             boolean canMatchPositionalParam(PositionalParamSpec positionalParam) {
                 System.out.println("***command line canMatchPositionalParam: " + positionalParam);
-                boolean matchesEmpty = matches.isEmpty();
-                boolean lastMatchMinElements = lastMatch().matchedMinElements();
-                boolean lastMatchMaxElements = lastMatch().matchedMaxElements();
-                boolean mayCreateNewMatch = !matchesEmpty && lastMatchMinElements;
-                boolean mustCreateNewMatch = !matchesEmpty && lastMatchMaxElements;
-                boolean maxMultiplicityReached = isMaxMultiplicityReached();
-                if (mustCreateNewMatch && maxMultiplicityReached) {
+                boolean mayCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMinElements();
+                boolean mustCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMaxElements();
+                if (mustCreateNewMatch && isMaxMultiplicityReached()) {
+                    System.out.println("***mustCreateNewMatch false: " + mustCreateNewMatch);
                     return false;
                 }
-                int lastMatchStartPosition = lastMatch().startPosition;
-                int startPosition = matchesEmpty ? 0 : lastMatchStartPosition;
+                int startPosition = matches.isEmpty() ? 0 : lastMatch().startPosition;
                 int accumulatedPosition = matches.isEmpty() ? 0 : lastMatch().position;
                 int localPosition = accumulatedPosition - startPosition;
                 if (mayCreateNewMatch) {
                     System.out.println("***cl mayCreateNewMatch: " + mayCreateNewMatch);
                     int positionalParamCount = positionalParam.group().localPositionalParamCount();
                     if (positionalParamCount != 0) {
+                        System.out.println("***cl positionalParamCount: " + positionalParamCount);
                         localPosition %= positionalParamCount;
                     } // #1213 prevent ArithmeticException: / by zero
+                } else {
+                    System.out.println("***cl mayCreateNewMatch is false ");
                 }
+                boolean matchcontains = positionalParam.index().contains(localPosition);
+                boolean matchpos = lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
                 System.out.println("***command line canMatchPositionalParam before return");
-                boolean doesContain = positionalParam.index().contains(localPosition);
-                boolean hasMatchedPosition = lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
-                return doesContain && !hasMatchedPosition;
+                return positionalParam.index().contains(localPosition) && !matchpos;
             }
         }
 
@@ -12765,7 +12793,11 @@ public class CommandLine {
                 }
                 addValueToListInMap(positionalValues, matchPosition, stronglyTypedValue);
             }
-            boolean hasMatchedValueAtPosition(ArgSpec arg, int position) { Map<Integer, List<Object>> atPos = matchedValuesAtPosition.get(arg); return atPos != null && atPos.containsKey(position); }
+            boolean hasMatchedValueAtPosition(ArgSpec arg, int position) {
+                System.out.println("***has matched value");
+                Map<Integer, List<Object>> atPos = matchedValuesAtPosition.get(arg);
+                return atPos != null && atPos.containsKey(position);
+            }
 
             /** Returns {@code true} if the minimum number of elements have been reached for this match:
              * all required arguments have been matched, and for each subgroup,
@@ -12776,11 +12808,14 @@ public class CommandLine {
              * the {@linkplain GroupMatchContainer#matchedMaxElements() maximum number of elements have been matched}.*/
             boolean matchedMaxElements() { return matchedFully(true); }
             private boolean matchedFully(boolean allRequired) {
+                System.out.println("***has matchedFully allRequired: " + allRequired);
                 if (group().exclusive()) { return !matchedValues.isEmpty() || hasFullyMatchedSubgroup(allRequired); }
                 for (ArgSpec arg : group().args()) {
+                    System.out.println("***has matchedFully ArgSpec: " + arg);
                     if (matchedValues.get(arg) == null && (arg.required() || allRequired)) { return false; }
                 }
                 for (ArgGroupSpec subgroup : group().subgroups()) {
+                    System.out.println("***has matchedFully subgroup: " + subgroup);
                     GroupMatchContainer groupMatchContainer = matchedSubgroups.get(subgroup);
                     if (groupMatchContainer != null) {
                         if (!groupMatchContainer.matchedFully(allRequired)) { return false; }
@@ -13436,9 +13471,13 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
             }
             int argIndex = parseResultBuilder.originalArgList.size() - args.size();
-            if (tracer.isDebug()) {tracer.debug("[%d] Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", argIndex, position, reverse(copy(args)));}
+            if (tracer.isDebug()) {
+                tracer.debug("[%d] Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", argIndex, position, reverse(copy(args)));
+            }
             if (config().stopAtPositional()) {
-                if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
+                if (!endOfOptions && tracer.isDebug()) {
+                    tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");
+                }
                 endOfOptions = true;
             }
             int originalInteractiveCount = this.interactiveCount;
@@ -13458,35 +13497,28 @@ public class CommandLine {
                         continue;
                     }
                 } else {
+                    System.out.println("***if !groupMatchContainer.else else");
                     if (!indexRange.contains(localPosition) || positionalParam.typedValueAtPosition.get(localPosition) != null) {
+                        System.out.println("***if !groupMatchContainer.else   if ");
                         continue;
                     }
                 }
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
-                boolean tracerDebug = tracer.isDebug();
                 if (tracer.isDebug()) {
-                    tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n",
-                            positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);
+                    tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);
                 }
-                boolean assertNoMiss = assertNoMissingParameters(positionalParam, arity, argsCopy);
-                if (!assertNoMiss) {
-                    System.out.println("***assertNoMiss -> about to break");
+                if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) {
                     break;
                 } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                String argDescription = "args[" + indexRange.internalToString() + "] at position " + localPosition;
-                int actuallyConsumed =
-                        applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted,
-                                arity, argsCopy, initialized, argDescription);
-                int argsCopySize = argsCopy.size();
+                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted, arity, argsCopy, initialized, "args[" + indexRange.internalToString() + "] at position " + localPosition);
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
                     interactiveConsumed = this.interactiveCount - originalInteractiveCount;
                 }
-                if (positionalParam.group() == null) { // dont update the command-level position for group args
-                    System.out.println("***dont update: " + "dont update the command-level position for group args");
+                if (positionalParam.group() == null) { // don't update the command-level position for group args
                     argsConsumed = Math.max(argsConsumed, count);
                 } else {
                     final int updatedPosition = localPosition + count;
@@ -13495,28 +13527,21 @@ public class CommandLine {
                         public void run() {
                             if (groupMatchContainer != null) {
                                 groupMatchContainer.lastMatch().position = updatedPosition;
-                                if (tracer.isDebug()) {
-                                    tracer.debug("Updated group position to %s for group %s.%n", groupMatchContainer.lastMatch().position, groupMatchContainer);
-                                }
+                                if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", groupMatchContainer.lastMatch().position, groupMatchContainer);}
                             }
                         }
                     });
                     consumedByGroup = Math.max(consumedByGroup, count);
                 }
                 while (parseResultBuilder.nowProcessing.size() > originalNowProcessingSize + count) {
-                    int temp = parseResultBuilder.nowProcessing.size() - 1;
-                    parseResultBuilder.nowProcessing.remove(temp);
+                    parseResultBuilder.nowProcessing.remove(parseResultBuilder.nowProcessing.size() - 1);
                 }
             }
             // remove processed args from the stack
             int maxConsumed = Math.max(consumedByGroup, argsConsumed);
-            for (int i = 0; i < maxConsumed; i++) {
-                args.pop();
-            }
+            for (int i = 0; i < maxConsumed; i++) { args.pop(); }
             position += argsConsumed + interactiveConsumed;
-            if (tracer.isDebug()) {
-                tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);
-            }
+            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
             for (Runnable task : bookKeeping) { task.run(); }
             if (consumedByGroup == 0 && argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArgument(args); // this gives error msg: "Unmatched argument at index 1: 'val2'"
