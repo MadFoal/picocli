@@ -5,6 +5,16 @@ import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+/**
+ * Issue 1384 https://github.com/remkop/picocli/issues/1384
+ * Details: Test class is used to reproduct the error described in issue 1384
+ *
+ * Given: Multiple parameters as an argument group
+ * Expected successful matching allows for execution and the creation of a  single argument group
+ * Result: Error: expected only one match but got multiple
+ *
+ */
+
 @Command(name = "Issue 1384 Bug Test", mixinStandardHelpOptions = true)
 public class Issue1384_bugTest implements Runnable {
 	private static class MyArgGroup {

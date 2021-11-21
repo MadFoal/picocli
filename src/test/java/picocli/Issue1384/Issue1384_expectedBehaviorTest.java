@@ -4,6 +4,16 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+/**
+ * Issue 1384 https://github.com/remkop/picocli/issues/1384
+ * Details: Test class is to demonstrations successful matches, the behavior that fails in the bug test
+ *
+ * Given: Multiple parameters as an array of strings
+ * Expected successful execution (avoids error due to passing an array instead of argument group)
+ * Result: Successful execution demonstrating the expected behavior
+ *
+ */
+
 @Command(name = "Issue 1384 Expected Behavior Test", mixinStandardHelpOptions = true)
 public class Issue1384_expectedBehaviorTest implements Runnable {
 	@Parameters(index = "0", arity = "1", description = "parameter 0")
