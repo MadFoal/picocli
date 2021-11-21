@@ -16,7 +16,7 @@ import picocli.CommandLine.Parameters;
  */
 
 @Command(name = "Issue 1384 Bug Test", mixinStandardHelpOptions = true)
-public class Issue1384_bugTest implements Runnable {
+public class Issue1384BugTest implements Runnable {
 	private static class MyArgGroup {
 		@Parameters(index = "0", arity = "1", description = "parameter 0")
 		String parameter0;
@@ -37,7 +37,7 @@ public class Issue1384_bugTest implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		int result = new CommandLine(new Issue1384_bugTest()).execute(args);
+		int result = new CommandLine(new Issue1384BugTest()).execute(args);
 		System.exit(result);
 	}
 
