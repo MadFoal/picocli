@@ -25,13 +25,14 @@ public class Issue1384ExpectedBehaviorTest implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("parameter0: " + parameter0);
-		System.out.println("parameter1: " + parameter1);
-		System.out.println("parameter2: " + parameter2);
+		assert (parameter0 != null);
+		// System.out.println("parameter0: " + parameter0);
+		// System.out.println("parameter1: " + parameter1);
+		// System.out.println("parameter2: " + parameter2);
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Arguments: " + args.length);
+		// System.out.println("Arguments: " + args.length);
 		int result = new CommandLine(new Issue1384ExpectedBehaviorTest()).execute(args);
 		System.exit(result);
 	}

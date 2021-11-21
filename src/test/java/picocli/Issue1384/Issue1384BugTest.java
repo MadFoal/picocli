@@ -31,9 +31,10 @@ public class Issue1384BugTest implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("parameter0: " + argGroup.parameter0);
-		System.out.println("parameter1: " + argGroup.parameter1);
-		System.out.println("parameter2: " + argGroup.parameter2);
+		assert (argGroup != null);
+		// System.out.printf("parameter0: " + argGroup.parameter0);
+		// System.out.println("parameter1: " + argGroup.parameter1);
+		// System.out.println("parameter2: " + argGroup.parameter2);
 	}
 
 	public static void main(String[] args) {
@@ -41,6 +42,8 @@ public class Issue1384BugTest implements Runnable {
 		System.exit(result);
 	}
 
+	/*
+	Used for testing at times
 	private static void printArray(String[] arg){
 		int index = 0;
 		for (String s : arg)
@@ -48,4 +51,5 @@ public class Issue1384BugTest implements Runnable {
 			System.out.println("***index: " + index++ + " val: " + s);
 		}
 	}
+	 */
 }
