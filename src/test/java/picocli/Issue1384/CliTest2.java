@@ -7,14 +7,15 @@ import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+// successful if last parameter in arg group is not optional, is required
 @Command(name = "CLI Test 2", mixinStandardHelpOptions = true)
 public class CliTest2 implements Runnable {
 	private static class MyArgGroup {
-		@Parameters(index = "0", arity = "1", description = "parameter 0")
+		@Parameters(index = "0", arity = "0..1", description = "parameter 0")
 		String param0;
 		@Parameters(index = "1", arity = "0..1", description = "parameter 1")
 		String param1;
-		@Parameters(index = "2", arity = "0..1", description = "parameter 2")
+		@Parameters(index = "2", arity = "1", description = "parameter 2")
 		String param2;
 	}
 
@@ -33,16 +34,5 @@ public class CliTest2 implements Runnable {
 	public static void main(String[] args) {
 		int exitCode = new CommandLine(new CliTest2()).execute(args);
 		System.exit(exitCode);
-	}
-
-
-
-	private static void printArray(String[] arg){
-		int c = 0;
-		for (String s : arg)
-		{
-			System.out.println("***count: " + c++ + "val: " + s);
-		}
-		System.out.println("***ender");
 	}
 }
