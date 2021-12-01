@@ -8,6 +8,7 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "CLI Test 1", mixinStandardHelpOptions = true)
 public class CliTest1 implements Runnable {
+	// NOT THIS PROJECT
 	@Parameters(index = "0", arity = "1", description = "parameter 0")
 	String param0;
 	@Parameters(index = "1", arity = "0..1", description = "parameter 1")
