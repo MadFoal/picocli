@@ -190,7 +190,7 @@ public class NegatableOptionTest {
         }
         App app = new App();
         try {
-            //TestUtil.setTraceLevel("DEBUG");
+            //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
             new CommandLine(app);
             fail("Expected exception");
         } catch (CommandLine.InitializationException ex) {
@@ -224,7 +224,7 @@ public class NegatableOptionTest {
         assertFalse(app.c);
         assertFalse(app.noVerbose);
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(app);
         cmd.setNegatableOptionTransformer(createNegatableShortOptionsTransformer());
 
@@ -255,7 +255,7 @@ public class NegatableOptionTest {
             @Option(names = {"+n", "--no-verbose"},   negatable = true, description = "...") boolean noVerbose;
         }
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer.Builder(CommandLine.RegexTransformer.createDefault())
@@ -570,5 +570,60 @@ public class NegatableOptionTest {
             String cls = NegOptDupli.class.getName();
             assertEquals("Option name '--NO-verbose' is used by both field boolean " + cls + ".verbose and field boolean " + cls + ".noVerbose", ex.getMessage());
         }
+    }
+
+    @Test
+    public void testIssue1642NegatableWithParameter() {
+        class TestNegation {
+            @Option(names = {"--flag"}, negatable = true)
+            boolean flag;
+        }
+        TestNegation obj = new TestNegation();
+        new CommandLine(obj).parseArgs("--no-flag=true");
+        assertFalse(obj.flag);
+
+        obj = new TestNegation();
+        new CommandLine(obj).parseArgs("--no-flag=true");
+        assertFalse(obj.flag);
+    }
+
+    @CommandLine.Command
+    static class TestCommand1880 {
+
+        @CommandLine.Option(
+            names = {"--backup"}, defaultValue = "true",
+            fallbackValue = "true", // this is new
+            negatable = true
+        )
+        public boolean wanted;
+    }
+//    names = {"--no-wanted"}, defaultValue = "true",
+//    expected: true, was: true, (no args)
+//    expected: true, was: true, --wanted
+//    expected: true, was: false, --wanted=true
+//    expected: false, was: true, --wanted=false
+//    expected: false, was: false, --no-wanted
+//    expected: false, was: true, --no-wanted=true
+//    expected: true, was: false, --no-wanted=false
+
+    @Test
+    public void test1880() {
+        assertValue(true);
+        assertValue(true, "--backup");
+        assertValue(true, "--backup=true");
+        assertValue(false, "--backup=false");
+        assertValue(false, "--no-backup");
+        assertValue(false, "--no-backup=true");
+        assertValue(true, "--no-backup=false");
+    }
+
+    private void assertValue(boolean expected, String... args) {
+        final TestCommand1880 command = new TestCommand1880();
+        new CommandLine(command).parseArgs(args);
+
+        String label = args.length ==0 ? "(no args)" : args[0];
+        //System.out.printf("expected: %s, was: %s, %s%n", expected, command.wanted, label);
+        //System.out.printf("%-17s   %s%n", label, command.wanted);
+        assertEquals(label, expected, command.wanted);
     }
 }

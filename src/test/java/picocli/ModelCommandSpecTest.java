@@ -74,7 +74,7 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testEmptyModelParse() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
@@ -385,13 +385,13 @@ public class ModelCommandSpecTest {
 
         List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
         OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is fallback when specified without args", 123, option2.getValue());
+        assertEquals("optional option is fallback when specified without args", Integer.valueOf(123), option2.getValue());
         assertEquals("optional option string fallback value when specified without args", "123", option2.stringValues().get(0));
         assertEquals("optional option typed value when specified without args", 123, option2.typedValues().get(0));
 
         List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "999");// specified with value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is empty string when specified with args", 999, option3.getValue());
+        assertEquals("optional option is empty string when specified with args", Integer.valueOf(999), option3.getValue());
         assertEquals("optional option string value when specified with args", "999", option3.stringValues().get(0));
         assertEquals("optional option typed value when specified with args", 999, option3.typedValues().get(0));
     }
@@ -429,7 +429,7 @@ public class ModelCommandSpecTest {
         Sample sample = new Sample();
         List<CommandLine> parsed3 = new CommandLine(sample).parse("--foo", "-x");// specified without value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is fallback typed value when specified without args", -1L, option3.getValue());
+        assertEquals("optional option is fallback typed value when specified without args", Long.valueOf(-1L), option3.getValue());
         assertEquals("optional option fallback string value when specified without args", "-1", option3.stringValues().get(0));
         assertEquals("optional option fallback typed value when specified without args", -1L, option3.typedValues().get(0));
         assertEquals(Long.valueOf(-1L), sample.foo);
@@ -684,7 +684,7 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testMultipleUsageHelpOptions() {
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
         CommandSpec cmd = CommandSpec.create()
                 .add(OptionSpec.builder("-x").type(boolean.class).usageHelp(true).build())
                 .add(OptionSpec.builder("-h").type(boolean.class).usageHelp(true).build());
@@ -698,7 +698,7 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testMultipleVersionHelpOptions() {
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
         CommandSpec cmd = CommandSpec.create()
                 .add(OptionSpec.builder("-x").type(boolean.class).versionHelp(true).build())
                 .add(OptionSpec.builder("-V").type(boolean.class).versionHelp(true).build());
@@ -1237,32 +1237,24 @@ public class ModelCommandSpecTest {
     public void testResemblesOption_WhenUnmatchedArePositional() {
         CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         spec.parser().unmatchedOptionsArePositionalParams(true);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
+        assertFalse(spec.resemblesOption("blah"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
+        assertFalse(spec.resemblesOption("blah"));
     }
 
     @Test
     public void testResemblesOption_WithoutOptions() {
         CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         spec.parser().unmatchedOptionsArePositionalParams(false);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
-        assertTrue(spec.resemblesOption("-a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
-        assertTrue(spec.resemblesOption("-a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
     }
 
     @Test
@@ -1271,19 +1263,15 @@ public class ModelCommandSpecTest {
         spec.addOption(OptionSpec.builder("-x").build());
 
         spec.parser().unmatchedOptionsArePositionalParams(false);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
-        assertTrue(spec.resemblesOption("-a", tracer));
-        assertFalse(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
+        assertFalse(spec.resemblesOption("/a"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
-        assertTrue(spec.resemblesOption("-a", tracer));
-        assertFalse(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertTrue(spec.resemblesOption("-a"));
+        assertFalse(spec.resemblesOption("/a"));
     }
 
     @Test
@@ -1292,19 +1280,15 @@ public class ModelCommandSpecTest {
         spec.addOption(OptionSpec.builder("/x").build());
 
         spec.parser().unmatchedOptionsArePositionalParams(false);
-        assertFalse(spec.resemblesOption("blah", null));
+        assertFalse(spec.resemblesOption("blah"));
 
-        System.setProperty("picocli.trace", "DEBUG");
-        Tracer tracer = new Tracer();
-        System.clearProperty("picocli.trace");
-        assertFalse(spec.resemblesOption("blah", tracer));
-        assertFalse(spec.resemblesOption("-a", tracer));
-        assertTrue(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertFalse(spec.resemblesOption("-a"));
+        assertTrue(spec.resemblesOption("/a"));
 
-        Tracer tracer2 = new Tracer();
-        assertFalse(spec.resemblesOption("blah", tracer2));
-        assertFalse(spec.resemblesOption("-a", tracer));
-        assertTrue(spec.resemblesOption("/a", tracer));
+        assertFalse(spec.resemblesOption("blah"));
+        assertFalse(spec.resemblesOption("-a"));
+        assertTrue(spec.resemblesOption("/a"));
     }
 
     @Test

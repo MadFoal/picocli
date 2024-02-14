@@ -772,7 +772,7 @@ public class MixinTest {
         assertEquals(1, commandSpec.subcommands().size());
         CommandLine subcommandLine = commandSpec.subcommands().get("mixinsub");
         assertSame(subcommandLine, commandLine.getSubcommands().get("mixinsub"));
-        assertTrue(subcommandLine.getCommand() instanceof MixedInSubCommand);
+        assertTrue(((Object) subcommandLine.getCommand()) instanceof MixedInSubCommand);
     }
 
     @Test
@@ -922,7 +922,7 @@ public class MixinTest {
 
     @Test
     public void testIssue619MethodSubcommandInSubclassAddedTwice() {
-        //setTraceLevel("DEBUG");
+        //setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine commandLine = new CommandLine(new Main());
         assertEquals(2, commandLine.getSubcommands().size());
 
@@ -1080,5 +1080,24 @@ public class MixinTest {
         another.addMixin("a", spec);
 
         assertEquals(43, another.usageMessage().longOptionsMaxWidth());
+    }
+
+    @Command(aliases = {"ls"} )
+    public static class ListAliasMixin {
+    }
+
+    @Command(name="list")
+    public static class MyListCommand {
+        @Mixin() public ListAliasMixin aliasMixin;
+    }
+
+    @Command(subcommands = {MyListCommand.class})
+    public static class App_Issue1836 {
+    }
+
+    @Test
+    public void testIssue1836CommandAliasOnMixin() {
+        Help help = new Help(new App_Issue1836());
+        assertEquals("list, ls", help.commandList().trim());
     }
 }

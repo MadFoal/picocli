@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21"
     }
 }
 
@@ -24,21 +24,21 @@ configurations {
 dependencies {
     api rootProject
     api project(':picocli-groovy')
-    api "org.jetbrains.kotlin:kotlin-stdlib"
-    api 'org.scala-lang:scala-library:2.13.7'
-    ivy            "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
-    implementation "org.codehaus.groovy:groovy-all:$groovyVersion",
-                   "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
-                   // for the Logging example
-                   "org.apache.logging.log4j:log4j-api:2.13.0",
-                   "org.apache.logging.log4j:log4j-core:2.13.0",
-                   // for the JSR-380 BeanValidation example
-                   "javax.validation:validation-api:2.0.0.Final",
-                   "org.hibernate.validator:hibernate-validator:6.1.2.Final",
-                   "org.hibernate.validator:hibernate-validator-annotation-processor:6.1.2.Final",
-                   "javax.el:javax.el-api:3.0.0",
-                   "org.glassfish.web:javax.el:2.2.6"
-    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.5.31"
+    api supportDependencies.kotlin_stdlib
+    api supportDependencies.scala_lang
+    ivy             supportDependencies.ivy // for Intelli/J
+    implementation  supportDependencies.groovy,
+                    supportDependencies.ivy, // for Intelli/J
+                    // for the Logging example
+                    supportDependencies.log4j2api,
+                    supportDependencies.log4j2core,
+                    // for the JSR-380 BeanValidation example
+                    supportDependencies.validation_api,
+                    supportDependencies.hibernate_validator,
+                    supportDependencies.hibernate_validator_annproc,
+                    //supportDependencies.el_api,
+                    supportDependencies.el_impl,
+                    supportDependencies.kotlin_script_runtime
 }
 tasks.withType(GroovyCompile) {
     // this, and the `configurations {ivy}` section, are a workaround for the dreaded
@@ -60,14 +60,22 @@ sourceSets {
 //a task that generates the resources for the example VersionProviderDemo1:
 task generateVersionTxt {
     description 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
+    def generated = new File(generatedResources, "version.txt")
+    outputs.file(generated)
     doLast {
         new File(generatedResources).mkdirs()
-        def generated = new File(generatedResources, "version.txt")
         generated.text = """
 Version: $rootProject.version
 Buildtime: ${new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())}
 Application-name: $rootProject.name $project.name
 """
+    }
+}
+normalization {
+    runtimeClasspath {
+        properties('**/version.txt') {
+            ignoreProperty 'Buildtime'
+        }
     }
 }
 

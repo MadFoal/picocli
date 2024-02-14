@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -111,7 +112,7 @@ public class HelpSubCommandTest {
                 new Help.ColorScheme.Builder(CommandLine.Help.defaultColorScheme(Help.Ansi.ON))
                         .commands(Help.Ansi.Style.underline)
                         .build()); // add underline
-        
+
         String expected = Help.Ansi.ON.new Text(String.format("" +
                 "Usage: @|bold,underline top|@ [COMMAND]%n" +
                 "top level command%n" +
@@ -139,8 +140,8 @@ public class HelpSubCommandTest {
         assertEquals(expected, baos.toString());
     }
 
-    @SuppressWarnings("deprecation")
     @Command(name = "customHelp", helpCommand = true)
+    @SuppressWarnings("deprecation")
     static class LegacyCustomHelpCommand implements IHelpCommandInitializable, Runnable {
         private CommandLine helpCommandLine;
         private Help.Ansi ansi;
@@ -306,7 +307,7 @@ public class HelpSubCommandTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
     }
 
@@ -328,7 +329,7 @@ public class HelpSubCommandTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
     }
 
@@ -344,15 +345,15 @@ public class HelpSubCommandTest {
                 .execute("help", "-h");
 
         String expected = String.format("" +
-                "Displays help information about the specified command%n" +
+                "Display help information about the specified command.%n" +
                 "%n" +
-                "Usage: <main class> help [-h] [COMMAND...]%n" +
+                "Usage: <main class> help [-h] [COMMAND]%n" +
                 "%n" +
                 "When no COMMAND is given, the usage help for the main command is displayed.%n" +
                 "If a COMMAND is specified, the help for that command is shown.%n" +
                 "%n" +
-                "      [COMMAND...]   The COMMAND to display the usage help message for.%n" +
-                "  -h, --help         Show usage help for the help command and exit.%n");
+                "      [COMMAND]   The COMMAND to display the usage help message for.%n" +
+                "  -h, --help      Show usage help for the help command and exit.%n");
         assertEquals(expected, sw.toString());
 
         sw = new StringWriter();
@@ -377,7 +378,7 @@ public class HelpSubCommandTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
 
         sw = new StringWriter();
@@ -408,7 +409,7 @@ public class HelpSubCommandTest {
                 "Usage: parent [COMMAND]%n" +
                 "the parent command%n" +
                 "Commands:%n" +
-                "  parent  Displays help information about the specified command%n");
+                "  parent  Display help information about the specified command.%n");
         assertEquals(expected, this.systemOutRule.getLog());
     }
 
@@ -427,7 +428,7 @@ public class HelpSubCommandTest {
                 "Usage: parent [COMMAND]%n" +
                 "the parent command%n" +
                 "Commands:%n" +
-                "  parent  Displays help information about the specified command%n");
+                "  parent  Display help information about the specified command.%n");
         assertEquals(expected, this.systemOutRule.getLog());
     }
 
@@ -500,5 +501,32 @@ public class HelpSubCommandTest {
 
         assertEquals(1, help.subcommands().size());
         assertEquals(new HashSet<String>(Arrays.asList("foo")), help.subcommands().keySet());
+    }
+
+    @Command(name = "import-from-excel",
+        aliases = { "import-from-xls", "import-from-xlsx", "import-from-csv", "import-from-txt" },
+        description = "Imports the data from various excel files (xls, xlsx, csv or even txt).")
+    static class ImportCommand implements Runnable {
+
+        @Parameters(arity = "1..*")
+        public List<String> files;
+
+        public void run() {
+            System.out.println("ImportCommand.run()");
+        }
+    }
+    @Test
+    public void testIssue1870StringIndexOutOfBounds() {
+        @Command(name = "top", subcommands = ImportCommand.class) class Top { }
+        String actual = usageString(new CommandLine(new Top()), Help.Ansi.OFF);
+        String expected = String.format("" +
+            "Usage: top [COMMAND]%n" +
+            "Commands:%n" +
+            "  import-from-excel, import-from-xls, import-from-xlsx, import-from-csv,%n" +
+            "    import-from-txt%n" +
+            "                                            Imports the data from various excel%n" +
+            "                                              files (xls, xlsx, csv or even%n" +
+            "                                              txt).%n");
+        assertEquals(expected, actual);
     }
 }

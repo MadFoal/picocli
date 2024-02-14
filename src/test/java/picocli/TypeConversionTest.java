@@ -90,6 +90,7 @@ public class TypeConversionTest {
         @Option(names = "-Byte")          Byte aByteField;
         @Option(names = "-char")          char charField;
         @Option(names = "-Character")     Character aCharacterField;
+        @Option(names = "-charArray")     char[] charArrayField;
         @Option(names = "-short")         short shortField;
         @Option(names = "-Short")         Short aShortField;
         @Option(names = "-int")           int intField;
@@ -180,8 +181,8 @@ public class TypeConversionTest {
                 "-double", "3.45", "-Double", "4.56", //
                 "-String", "abc", "-StringBuilder", "bcd", "-CharSequence", "xyz", //
                 "-File", "abc.txt", //
-                "-URL", "http://pico-cli.github.io", //
-                "-URI", "http://pico-cli.github.io/index.html", //
+                "-URL", "https://picocli.info", //
+                "-URI", "https://picocli.info/index.html", //
                 "-Date", "2017-01-30", //
                 "-Time", "23:59:59", //
                 "-BigDecimal", "12345678901234567890.123", //
@@ -191,7 +192,7 @@ public class TypeConversionTest {
                 "-Pattern", "a*b", //
                 "-UUID", "c7d51423-bf9d-45dd-a30d-5b16fafe42e2", //
                 "-Currency", "EUR",
-                "-tz", "Japan/Tokyo",
+                "-tz", "Asia/Tokyo",
                 "-byteOrder", "LITTLE_ENDIAN",
                 "-Class", "java.lang.String",
                 "-NetworkInterface", "127.0.0.0",
@@ -221,8 +222,8 @@ public class TypeConversionTest {
         assertEquals("StringBuilder", "bcd", bean.aStringBuilderField.toString());
         assertEquals("CharSequence", "xyz", bean.aCharSequenceField);
         assertEquals("File", new File("abc.txt"), bean.aFileField);
-        assertEquals("URL", new URL("http://pico-cli.github.io"), bean.anURLField);
-        assertEquals("URI", new URI("http://pico-cli.github.io/index.html"), bean.anURIField);
+        assertEquals("URL", new URL("https://picocli.info"), bean.anURLField);
+        assertEquals("URI", new URI("https://picocli.info/index.html"), bean.anURIField);
         assertEquals("Date", new SimpleDateFormat("yyyy-MM-dd").parse("2017-01-30"), bean.aDateField);
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss").parse("23:59:59").getTime()), bean.aTimeField);
         assertEquals("BigDecimal", new BigDecimal("12345678901234567890.123"), bean.aBigDecimalField);
@@ -232,7 +233,7 @@ public class TypeConversionTest {
         assertEquals("Pattern", Pattern.compile("a*b").pattern(), bean.aPatternField.pattern());
         assertEquals("UUID", UUID.fromString("c7d51423-bf9d-45dd-a30d-5b16fafe42e2"), bean.anUUIDField);
         assertEquals("Currency", Currency.getInstance("EUR"), bean.aCurrencyField);
-        assertEquals("TimeZone", TimeZone.getTimeZone("Japan/Tokyo"), bean.aTimeZone);
+        assertEquals("TimeZone", TimeZone.getTimeZone("Asia/Tokyo"), bean.aTimeZone);
         assertEquals("ByteOrder", ByteOrder.LITTLE_ENDIAN, bean.aByteOrder);
         assertEquals("Class", String.class, bean.aClass);
         assertEquals("NetworkInterface", NetworkInterface.getByInetAddress(InetAddress.getByName("127.0.0.0")), bean.aNetInterface);
@@ -484,6 +485,16 @@ public class TypeConversionTest {
         }
     }
     @Test
+    public void testCharArrayConverter() {
+        try {
+            final SupportedTypes cli = new SupportedTypes();
+            CommandLine.populateCommand(cli, "-charArray", "abcd");
+            assertArrayEquals(new char[]{'a', 'b', 'c', 'd'}, cli.charArrayField);
+        } catch (Exception exception) {
+            fail("Unexpected exception while converting char[] type: " + exception.getMessage());
+        }
+    }
+    @Test
     public void testNumberConvertersInvalidError() {
         parseInvalidValue("-Byte", "aa", "Invalid value for option '-Byte': 'aa' is not a byte");
         parseInvalidValue("-byte", "aa", "Invalid value for option '-byte': 'aa' is not a byte");
@@ -601,7 +612,7 @@ public class TypeConversionTest {
         String[] args = {"a*glob*pattern"};
         List<CommandLine> parsed = commandLine.parse(args);
         assertEquals("not empty", 1, parsed.size());
-        assertTrue(parsed.get(0).getCommand() instanceof App);
+        assertTrue(((Object) parsed.get(0).getCommand()) instanceof App);
         App app = (App) parsed.get(0).getCommand();
         assertEquals(args[0], app.globField.glob);
     }
@@ -625,7 +636,7 @@ public class TypeConversionTest {
         String[] args = {"a*glob*pattern"};
         List<CommandLine> parsed = commandLine.parse(args);
         assertEquals("not empty", 1, parsed.size());
-        assertTrue(parsed.get(0).getCommand() instanceof App);
+        assertTrue(((Object) parsed.get(0).getCommand()) instanceof App);
         App app = (App) parsed.get(0).getCommand();
         assertEquals(args[0], app.globField.glob);
     }
@@ -716,8 +727,7 @@ public class TypeConversionTest {
         //System.out.println(sw);
         assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)"));
         assertTrue(sw.toString().contains(String.format("Caused by: java.lang.IllegalStateException: bad converter%n" +
-                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:674)%n" +
-                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:672)")));
+                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:")));
     }
     static class TypeConversionExceptionConverter implements ITypeConverter<Integer> {
         public Integer convert(String value) throws Exception {
@@ -752,8 +762,7 @@ public class TypeConversionTest {
         //System.out.println(sw);
         assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): I am always thrown"));
         assertTrue(sw.toString(), sw.toString().contains(String.format("Caused by: picocli.CommandLine$TypeConversionException: I am always thrown%n" +
-                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:724)%n" +
-                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:722)%n")));
+                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:")));
     }
     static class CustomConverter implements ITypeConverter<Integer> {
         public Integer convert(String value) { return Integer.parseInt(value); }

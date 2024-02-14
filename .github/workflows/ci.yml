@@ -1,0 +1,155 @@
+name: Build
+on: [ push, pull_request ]
+permissions:
+  checks: write
+  pull-requests: write
+
+jobs:
+  build-java-8-plus:
+    strategy:
+      matrix:
+        java-version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' || matrix.java-version == '9' || matrix.java-version == '10' || matrix.java-version == '12' || matrix.java-version == '13' || matrix.java-version == '14' || matrix.java-version == '15' || matrix.java-version == '16' || matrix.java-version == '19' }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4
+
+      - name: Configure JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java-version }}
+          cache: gradle
+
+      - name: Show Gradle Version
+        run: ./gradlew --version
+
+      - name: ShowToolChains
+        run: ./gradlew -q javaToolchains
+
+      - name: Build
+        run: ./gradlew --stop;./gradlew clean;./gradlew build --no-daemon
+
+      - name: Publish Test Results (Linux)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        id: test-results-nix
+        if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+        with:
+          junit_files: |
+            build/test-results/test/**/*.xml
+            picocli-*/build/test-results/test/**/*.xml
+
+      - name: Publish Test Results (Win/Mac)
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        id: test-results
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') }}
+        with:
+          junit_files: |
+            build/test-results/test/**/*.xml
+            picocli-*/build/test-results/test/**/*.xml
+
+      - name: Set badge color (Linux)
+        shell: bash
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && steps.test-results-nix.outputs.json }}
+        run: |
+          case ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Set badge color (Win/Mac)
+        shell: bash
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && steps.test-results.outputs.json }}
+        run: |
+          case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Create badge (Linux)
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && steps.test-results-nix.outputs.json }}
+        uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
+        with:
+          label: Tests
+          status: '${{ fromJSON( steps.test-results-nix.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results-nix.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results-nix.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
+          path: badge.svg
+
+      - name: Create badge (Win/Mac)
+        if: ${{ always() && (matrix.os == 'macos-latest' || matrix.os == 'windows-latest') && steps.test-results.outputs.json }}
+        uses: emibcn/badge-action@4209421db54c8764d8932070ffd0f81715a629bf
+        with:
+          label: Tests
+          status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
+          path: badge.svg
+
+      - name: Upload badge to Gist
+        # Upload only for main branch
+        if: >
+          github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main' ||
+          github.event_name != 'workflow_run' && github.ref == 'refs/heads/main'
+        uses: andymckay/append-gist-action@6e8d64427fe47cbacf4ab6b890411f1d67c07f3e
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gistURL: https://gist.githubusercontent.com/remkop/36bc8a3b4395f2fbdb9bc271e97ba2dd
+          file: badge.svg
+
+
+  build-java-6-7:
+    strategy:
+      matrix:
+        java-version: [ 6, 7 ]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4
+
+      - name: Configure JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: 'zulu'
+          java-version: ${{ matrix.java-version }}
+          cache: gradle
+
+      - name: Build
+        uses: gradle/gradle-build-action@v2.11.1 # v2.11.1
+        with:
+          gradle-version: 1.12
+          build-root-directory: picocli-tests-java567/
+          arguments: clean build --no-daemon

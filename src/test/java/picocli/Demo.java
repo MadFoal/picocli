@@ -55,7 +55,7 @@ import java.util.jar.Manifest;
         //descriptionHeading = "@|bold %nDescription|@:%n",
         description = {
                 "",
-                "Demonstrates picocli subcommands parsing and usage help.", },
+                "Demonstrates picocli subcommands parsing and usage help." },
         versionProvider = Demo.ManifestVersionProvider.class,
         optionListHeading = "@|bold %nOptions|@:%n",
         footer = {
@@ -367,7 +367,7 @@ public class Demo implements Runnable {
             header = "Record changes to the repository.",
             description = "Stores the current contents of the index in a new commit " +
                     "along with a log message from the user describing the changes.")
-    class GitCommit { // end::GitCommit-declaration[]
+    class GitCommit implements Runnable { // end::GitCommit-declaration[]
         @Option(names = {"-a", "--all"},
                 description = "Tell the command to automatically stage files that have been modified " +
                         "and deleted, but new files you have not told Git about are not affected.")
@@ -407,6 +407,10 @@ public class Demo implements Runnable {
 
         @Parameters(paramLabel = "<files>", description = "the files to commit")
         List<File> files = new ArrayList<File>();
+
+        public void run() {
+            // business logic here...
+        }
     }
     // end::GitCommit[]
 
@@ -430,8 +434,8 @@ public class Demo implements Runnable {
         List<CommandLine> parsed = commandLine.parse(args);
         assert parsed.size() == 2 : "found 2 commands";
 
-        assert parsed.get(0).getCommand().getClass() == Git.class;
-        assert parsed.get(1).getCommand().getClass() == GitStatus.class;
+        assert ((Object) parsed.get(0).getCommand()).getClass() == Git.class;
+        assert ((Object) parsed.get(1).getCommand()).getClass() == GitStatus.class;
 
         Git git = (Git) parsed.get(0).getCommand();
         assert git.gitDir.equals(new File("/home/rpopma/picocli"));
@@ -486,7 +490,7 @@ public class Demo implements Runnable {
             "Commands:%n" +
             "%n" +
             "The most commonly used git commands are:%n" +
-            "  help      Displays help information about the specified command%n" +
+            "  help      Display help information about the specified command.%n" +
             "  status    Show the working tree status.%n" +
             "  commit    Record changes to the repository.%n" +
             "  add       Add file contents to the index.%n" +
@@ -510,7 +514,7 @@ public class Demo implements Runnable {
             "Commands:%n" +
             "%n" +
             "The most commonly used git commands are:%n" +
-            "  \u001B[1mhelp\u001B[21m\u001B[0m      Displays help information about the specified command%n" +
+            "  \u001B[1mhelp\u001B[21m\u001B[0m      Display help information about the specified command.%n" +
             "  \u001B[1mstatus\u001B[21m\u001B[0m    Show the working tree status.%n" +
             "  \u001B[1mcommit\u001B[21m\u001B[0m    Record changes to the repository.%n" +
             "  \u001B[1madd\u001B[21m\u001B[0m       Add file contents to the index.%n" +
@@ -677,7 +681,7 @@ public class Demo implements Runnable {
 
     static
     // tag::CheckSum[]
-    @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+    @Command(description = "Prints the checksum (SHA-1 by default) of a file to STDOUT.",
             name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
     class CheckSum implements Callable<Integer> {
 
@@ -685,7 +689,7 @@ public class Demo implements Runnable {
         private File file;
 
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
-        private String algorithm = "MD5";
+        private String algorithm = "SHA-1";
 
         public static void main(String[] args) {
             // CheckSum implements Callable,

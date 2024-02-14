@@ -138,7 +138,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("4.6.3-SNAPSHOT", CommandLine.VERSION);
+        assertEquals("4.7.6-SNAPSHOT", CommandLine.VERSION);
     }
     @Test
     public void testArrayPositionalParametersAreReplacedNotAppendedTo() {
@@ -589,7 +589,7 @@ public class CommandLineTest {
             @Option(names = "-f") String field = null;
             @Option(names = "-p") int primitive = 43;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
         cmd.parseArgs("-f", "111", "-f", "222");
         App ff = cmd.getCommand();
@@ -807,7 +807,7 @@ public class CommandLineTest {
 
     @Test
     public void testCompactFieldsWithUnmatchedArguments() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new CompactFields()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("-oout -r -vp1 p2".split(" "));
         assertEquals(Arrays.asList("-p1"), cmd.getUnmatchedArguments());
@@ -1210,7 +1210,7 @@ public class CommandLineTest {
         class App {
             @Option(names = "--opt", required = true) String opt;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         try {
             cmd.parseArgs("--opt=abc");
@@ -1770,7 +1770,7 @@ public class CommandLineTest {
         class SingleValue {
             @Parameters(index = "0") String str;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("val1", "val2");
         assertEquals("val1", ((SingleValue)cmd.getCommand()).str);
@@ -1782,7 +1782,7 @@ public class CommandLineTest {
         class SingleValue {
             @Parameters(index = "0..2") String[] str;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("val0", "val1", "val2", "val3");
         assertArrayEquals(new String[]{"val0", "val1", "val2"}, ((SingleValue)cmd.getCommand()).str);
@@ -1794,7 +1794,7 @@ public class CommandLineTest {
         class SingleValue {
             @Parameters(index = "0..2") String[] str;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new SingleValue());
         assertTrue(cmd.getUnmatchedArguments().isEmpty());
 
@@ -1813,7 +1813,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument at index 1: 'val2'", ex.getMessage());
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("val1", "val2");
         assertEquals("val1", ((SingleValue) cmd.getCommand()).str);
@@ -1828,8 +1828,8 @@ public class CommandLineTest {
         List<CommandLine> parsed = commandLine.parse("--git-dir=/home/rpopma/picocli status -sbuno".split(" "));
         assertEquals("command count", 2, parsed.size());
 
-        assertEquals(Demo.Git.class,       parsed.get(0).getCommand().getClass());
-        assertEquals(Demo.GitStatus.class, parsed.get(1).getCommand().getClass());
+        assertEquals(Demo.Git.class,       ((Object) parsed.get(0).getCommand()).getClass());
+        assertEquals(Demo.GitStatus.class, ((Object) parsed.get(1).getCommand()).getClass());
 
         Demo.Git git = (Demo.Git) parsed.get(0).getCommand();
         assertEquals(new File("/home/rpopma/picocli"), git.gitDir);
@@ -1851,8 +1851,8 @@ public class CommandLineTest {
 
         Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof Command1);
-        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof Command2);
+        assertTrue("cmd1", ((Object) commandMap.get("cmd1").getCommand()) instanceof Command1);
+        assertTrue("cmd2", ((Object) commandMap.get("cmd2").getCommand()) instanceof Command2);
     }
 
     @Test
@@ -1866,8 +1866,8 @@ public class CommandLineTest {
 
         Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("CMD1").getCommand() instanceof Command1);
-        assertTrue("cmd2", commandMap.get("CMD2").getCommand() instanceof Command2);
+        assertTrue("cmd1", ((Object) commandMap.get("CMD1").getCommand()) instanceof Command1);
+        assertTrue("cmd2", ((Object) commandMap.get("CMD2").getCommand()) instanceof Command2);
     }
 
     @Test(expected = InitializationException.class)
@@ -1966,7 +1966,7 @@ public class CommandLineTest {
             @Option(names = {"-s", "--str"})      String string;
             @Option(names = {"-v", "--verbose"}) boolean bool;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
         commandLine.parseArgs("-s", "1", "--str", "2");
         assertEquals("2", ((App) commandLine.getCommand()).string);
@@ -1987,7 +1987,7 @@ public class CommandLineTest {
         class App {
             @Option(names = {"-s", "--str"})      String string;
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine commandLine = new CommandLine(new App())
                 .addSubcommand("parent", new Parent())
                 .setOverwrittenOptionsAllowed(true);
@@ -2169,7 +2169,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments from index 2: '3=c', '4=d'", ex.getMessage());
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
@@ -2186,7 +2186,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument at index 3: '4=d'", ex.getMessage());
         }
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("4=d"), cmd.getUnmatchedArguments());
@@ -2358,7 +2358,7 @@ public class CommandLineTest {
             @Option(names = {"-c", "--ccc"}) String third;
             @Parameters String[] positional;
         }
-        setTraceLevel("INFO");
+        setTraceLevel(CommandLine.TraceLevel.INFO);
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
@@ -2392,7 +2392,7 @@ public class CommandLineTest {
                 CommandLine.versionString());
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
     }
 
     @Test
@@ -2422,7 +2422,7 @@ public class CommandLineTest {
 
     @Test
     public void testStopAtUnmatched_UnmatchedOption() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class App {
             @Option(names = "-a") String first;
             @Parameters String[] positional;
@@ -2446,7 +2446,7 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("--y"), commandLine2.getUnmatchedArguments());
         assertEquals("abc", cmd2.first);
         assertArrayEquals(new String[]{"positional"}, cmd2.positional);
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
 
     }
 
@@ -2614,7 +2614,7 @@ public class CommandLineTest {
                     addSubcommand("sub2", new Sub2()).
                     parseArgs("sub1 -x abc".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Top);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Top);
         }
         try {
             new CommandLine(new Top()).
@@ -2622,7 +2622,7 @@ public class CommandLineTest {
                     addSubcommand("sub2", new Sub2()).
                     parseArgs("-o OPT sub1 -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub1);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub1);
         }
         try {
             new CommandLine(new Top()).
@@ -2630,7 +2630,7 @@ public class CommandLineTest {
                     addSubcommand("sub2", new Sub2()).
                     parseArgs("-o OPT sub2 -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub2);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub2);
         }
         List<CommandLine> parsed = new CommandLine(new Top()).
                 addSubcommand("sub1", new Sub1()).
@@ -2655,17 +2655,17 @@ public class CommandLineTest {
         try {
             new CommandLine(new Top()).parseArgs("sub207A -x abc".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Top);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Top);
         }
         try {
             new CommandLine(new Top()).parseArgs("-o OPT sub207A -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub207A);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub207A);
         }
         try {
             new CommandLine(new Top()).parseArgs("-o OPT sub207B -wrong ABC".split(" "));
         } catch (ParameterException ex) {
-            assertTrue(ex.getCommandLine().getCommand() instanceof Sub207B);
+            assertTrue(((Object) ex.getCommandLine().getCommand()) instanceof Sub207B);
         }
         List<CommandLine> parsed = new CommandLine(new Top()).
                 parse("-o OPT sub207A -x ABC".split(" "));
@@ -2739,7 +2739,7 @@ public class CommandLineTest {
         app = CommandLine.populateCommand(new App(), "-a", "-a", "-a");
         assertArrayEquals(new boolean[]{true, true, true}, app.array);
 
-        setTraceLevel("DEBUG");
+        setTraceLevel(CommandLine.TraceLevel.DEBUG);
         app = CommandLine.populateCommand(new App(), "-aaa");
         assertArrayEquals(new boolean[]{true, true, true}, app.array);
     }
@@ -2763,7 +2763,7 @@ public class CommandLineTest {
 
     @Test
     public void testUnmatchedAnnotationWithInstantiatedList() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class App {
             @Unmatched List<String> unmatched = new ArrayList<String>();
             @Option(names = "-o") String option;
@@ -2777,7 +2777,7 @@ public class CommandLineTest {
 
     @Test
     public void testUnmatchedAnnotationInstantiatesList() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class App {
             @Unmatched List<String> unmatched;
             @Option(names = "-o") String option;
@@ -2791,7 +2791,7 @@ public class CommandLineTest {
 
     @Test
     public void testUnmatchedAnnotationInstantiatesArray() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class App {
             @Unmatched String[] unmatched;
             @Option(names = "-o") String option;
@@ -2805,7 +2805,7 @@ public class CommandLineTest {
 
     @Test
     public void testMultipleUnmatchedAnnotations() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class App {
             @Unmatched String[] unmatched1;
             @Unmatched String[] unmatched2;
@@ -2825,7 +2825,7 @@ public class CommandLineTest {
 
     @Test
     public void testCommandAllowsOnlyUnmatchedAnnotation() {
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         class App {
             @Unmatched String[] unmatched;
         }
@@ -3474,13 +3474,13 @@ public class CommandLineTest {
 
     @Test
     public void testClose() {
-        setTraceLevel("WARN");
+        setTraceLevel(CommandLine.TraceLevel.WARN);
         CommandLine.close(new Closeable() {
             public void close() throws IOException {
                 throw new IllegalStateException("booh!");
             }
         });
-        String expected = "[picocli WARN] Could not close picocli.CommandLineTest$2@: java.lang.IllegalStateException: booh!";
+        String expected = String.format("[picocli WARN] Could not close picocli.CommandLineTest$2@: java.lang.IllegalStateException: booh!%n");
         assertEquals(expected, systemErrRule.getLog().replaceAll("@.*: java", "@: java"));
     }
 

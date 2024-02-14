@@ -120,7 +120,7 @@ public class RepeatableSubcommandsTest {
 
     @Test
     public void testParseResult() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cl = new CommandLine(new A());
         String[] args = "B B C D B E F G E E F F".split(" ");
         ParseResult parseResult = cl.parseArgs(args);
@@ -701,6 +701,14 @@ public class RepeatableSubcommandsTest {
     }
 
     @Test
+    public void test1125_MultivalueOptions_ConsumesSubcommands() {
+        int exitCode = new CommandLine(new MultivalueTop())
+            .setAllowSubcommandsAsOptionParameters(true)
+            .execute("sub1 -x1 -x2 -x3 sub2 -y1 -y2 -y3 -y4".split(" "));
+        assertEquals(8, exitCode); // 8 args of the first sub1
+    }
+
+    @Test
     public void testCommandSpec_SubcommandsRepeatable() {
         class Positional {
             @Parameters(index = "0") String first;
@@ -783,7 +791,7 @@ public class RepeatableSubcommandsTest {
         };
         ResourceBundle rb = new PropertyResourceBundle(new ByteArrayInputStream(new byte[0]));
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
 
         Issue1007CommandWithCustomConverter cmd = new Issue1007CommandWithCustomConverter();
         CommandLine line = new CommandLine(cmd);

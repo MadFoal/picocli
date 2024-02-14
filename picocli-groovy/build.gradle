@@ -6,15 +6,15 @@ plugins {
 group 'info.picocli'
 description 'Picocli Groovy - easily use picocli in Groovy scripts.'
 version "$projectVersion"
+ext.moduleName = 'info.picocli.groovy'
 
 configurations {
     ivy
 }
 dependencies {
-    api                rootProject
-    compileOnly        "org.codehaus.groovy:groovy-all:$groovyVersion"
-    ivy                "org.apache.ivy:ivy:$ivyVersion" // for Gradle
-    testImplementation "junit:junit:$junitVersion"
+    api            rootProject
+    compileOnly    supportDependencies.groovy
+    ivy            supportDependencies.ivy // for Gradle
 }
 tasks.withType(GroovyCompile) {
     // this, and the `configurations {ivy}` section, are a workaround for the dreaded
@@ -36,8 +36,7 @@ jar {
                     'Specification-Version' : archiveVersion.get(),
                     'Implementation-Title'  : 'Picocli Groovy',
                     'Implementation-Vendor' : 'Remko Popma',
-                    'Implementation-Version': archiveVersion.get(),
-                    'Automatic-Module-Name' : 'info.picocli.groovy'
+                    'Implementation-Version': archiveVersion.get()
     }
 }
 

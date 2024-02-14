@@ -41,6 +41,7 @@ import picocli.CommandLine.Model.OptionSpec;
  * @since 4.1.2
  */
 public class PicocliCommands implements CommandRegistry {
+    private String picocliCommandsName;
 
     /**
      * Command that clears the screen.
@@ -176,6 +177,7 @@ public class PicocliCommands implements CommandRegistry {
                 String buffer = word.substring(0, commandLine.wordCursor());
                 int eq = buffer.indexOf('=');
                 for (OptionSpec option : sub.getCommandSpec().options()) {
+                    if (option.hidden()) continue;
                     if (option.arity().max() == 0 && eq < 0) {
                         addCandidates(candidates, Arrays.asList(option.names()));
                     } else {
@@ -192,7 +194,9 @@ public class PicocliCommands implements CommandRegistry {
             } else {
                 addCandidates(candidates, sub.getSubcommands().keySet());
                 for (CommandLine s : sub.getSubcommands().values()) {
-                    addCandidates(candidates, Arrays.asList(s.getCommandSpec().aliases()));
+                    if (!s.getCommandSpec().usageMessage().hidden()) {
+                        addCandidates(candidates, Arrays.asList(s.getCommandSpec().aliases()));
+                    }
                 }
             }
         }
@@ -276,7 +280,7 @@ public class PicocliCommands implements CommandRegistry {
 
     // For JLine >= 3.16.0
     @Override
-    public Object invoke(CommandRegistry.CommandSession session, String command, Object[] args) throws Exception {
+    public Object invoke(CommandRegistry.CommandSession session, String command, Object... args) throws Exception {
         List<String> arguments = new ArrayList<>();
         arguments.add( command );
         arguments.addAll( Arrays.stream( args ).map( Object::toString ).collect( Collectors.toList() ) );
@@ -306,5 +310,26 @@ public class PicocliCommands implements CommandRegistry {
     // @Override This method was removed in JLine 3.16.0; keep it in case this component is used with an older version of JLine
     public CmdDesc commandDescription(String command) {
         return null;
+    }
+
+    /**
+     * Returns the name shown for this collection of picocli commands in the usage help message.
+     * If not set with {@link #name(String)}, this returns {@link CommandRegistry#name()}.
+     * @return the name shown for this collection of picocli commands in the usage help message
+     */
+    @Override
+    public String name() {
+        if (picocliCommandsName != null) {
+            return picocliCommandsName;
+        }
+        return CommandRegistry.super.name();
+    }
+
+    /**
+     * Sets the name shown for this collection of picocli commands in the usage help message.
+     * @param newName the new name to show
+     */
+    public void name(String newName) {
+        picocliCommandsName = newName;
     }
 }

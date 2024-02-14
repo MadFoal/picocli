@@ -1,8 +1,8 @@
 = Autocomplete for Java Command Line Applications
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.6.3-SNAPSHOT
-:revdate: 2021-11-05
+:revnumber: 4.7.6-SNAPSHOT
+:revdate: 2023-08-27
 :toc: left
 :numbered:
 :toclevels: 3
@@ -77,7 +77,7 @@ jchecksum_completion  myproject.jar  picocli-1.0.0.jar
 ----
 
 === Install Completion Script
-Finally, http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[source] the completion script:
+Finally, https://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[source] the completion script:
 
 .Bash or ZSH
 [source,bash]
@@ -287,8 +287,8 @@ the fully qualified class name of the annotated command object.
 $ java -cp "picocli-1.0.0.jar;myproject.jar" picocli.AutoComplete com.myproject.CheckSum
 ----
 
-This will instantiate your command, and inspect it for http://picocli.info/apidocs/picocli/CommandLine.Option.html[`@Option`]
-and http://picocli.info/apidocs/picocli/CommandLine.Command.html[`@Command`] annotations.
+This will instantiate your command, and inspect it for http://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Option.html[`@Option`]
+and http://picocli.info/apidocs-all/info.picocli/picocli/CommandLine.Command.html[`@Command`] annotations.
 Based on these annotations it will generate a completion script in the current directory.
 
 Because of this, the command class needs to be on the classpath when running the `picocli.AutoComplete` class.
@@ -423,7 +423,7 @@ Star icon:star-o[] or fork icon:code-fork[] this project on GitHub if you like i
 Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report bugs or request features.
 
 == License
-Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICENSE[Apache License 2.0].
+Picocli is licensed under the https://github.com/remkop/picocli/blob/main/LICENSE[Apache License 2.0].
 
 == Releases
 Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].

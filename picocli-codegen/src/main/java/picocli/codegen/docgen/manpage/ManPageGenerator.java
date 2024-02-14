@@ -190,7 +190,7 @@ public class ManPageGenerator implements Callable<Integer> {
                     "",
                     "Example",
                     "-------",
-                    "  java -Duser.language=de -cp \"myapp.jar;picocli-4.6.3-SNAPSHOT.jar;picocli-codegen-4.6.3-SNAPSHOT.jar\" " +
+                    "  java -Duser.language=de -cp \"myapp.jar;picocli-4.7.6-SNAPSHOT.jar;picocli-codegen-4.7.6-SNAPSHOT.jar\" " +
                             "picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass"
             }
     )
@@ -500,31 +500,28 @@ public class ManPageGenerator implements Callable<Integer> {
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
 
         List<ArgGroupSpec> groups = optionListGroups(spec);
-        for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
-
-        if (options.isEmpty() && !spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
-            pw.printf("// tag::picocli-generated-man-section-options[]%n");
-            pw.printf("// end::picocli-generated-man-section-options[]%n");
-            pw.println();
-            return;
-        }
-        pw.printf("// tag::picocli-generated-man-section-options[]%n");
-        pw.printf("== Options%n");
-
+        for (ArgGroupSpec group : groups) { options.removeAll(group.allOptionsNested()); }
+        
         Comparator<OptionSpec> optionSort = spec.usageMessage().sortOptions()
                 ? new SortByShortestOptionNameAlphabetically()
                 : createOrderComparatorIfNecessary(spec.options());
-        if (optionSort != null) {
-            Collections.sort(options, optionSort); // default: sort options ABC
-        }
-        for (OptionSpec option : options) {
-            writeOption(pw, optionRenderer, paramLabelRenderer, option);
-        }
+        
+        pw.printf("// tag::picocli-generated-man-section-options[]%n");
+        if (!options.isEmpty()) {
+            pw.printf("== Options%n");
 
-        if (spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
-            CommandLine cmd = new CommandLine(spec).setColorScheme(COLOR_SCHEME);
-            CommandLine.Help help = cmd.getHelp();
-            writeEndOfOptions(pw, optionRenderer, paramLabelRenderer, help.END_OF_OPTIONS_OPTION);
+            if (optionSort != null) {
+                Collections.sort(options, optionSort); // default: sort options ABC
+            }
+            for (OptionSpec option : options) {
+                writeOption(pw, optionRenderer, paramLabelRenderer, option);
+            }
+    
+            if (spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
+                CommandLine cmd = new CommandLine(spec).setColorScheme(COLOR_SCHEME);
+                CommandLine.Help help = cmd.getHelp();
+                writeEndOfOptions(pw, optionRenderer, paramLabelRenderer, help.END_OF_OPTIONS_OPTION);
+            }
         }
 
         // now create a custom option section for each arg group that has a heading
@@ -534,12 +531,12 @@ public class ManPageGenerator implements Callable<Integer> {
             String heading = makeHeading(group.heading(), "Options Group");
             pw.printf("== %s%n", COLOR_SCHEME.text(heading));
 
-            for (PositionalParamSpec positional : group.positionalParameters()) {
+            for (PositionalParamSpec positional : group.allPositionalParametersNested()) {
                 if (!positional.hidden()) {
                     writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
                 }
             }
-            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
+            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNested());
             if (optionSort != null) {
                 Collections.sort(groupOptions, optionSort);
             }
@@ -551,6 +548,7 @@ public class ManPageGenerator implements Callable<Integer> {
         pw.printf("// end::picocli-generated-man-section-options[]%n");
         pw.println();
     }
+
 
     /** Returns the list of {@code ArgGroupSpec}s with a non-{@code null} heading. */
     private static List<ArgGroupSpec> optionListGroups(CommandSpec commandSpec) {

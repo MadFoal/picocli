@@ -1,9 +1,5 @@
 package picocli;
 
-import static java.lang.String.format;
-import static org.junit.Assert.*;
-import static picocli.CommandLine.Option.NULL_VALUE;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -11,19 +7,18 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IDefaultValueProvider;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.PropertiesDefaultProvider;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 public class DefaultProviderTest {
 
@@ -363,4 +358,128 @@ public class DefaultProviderTest {
         App app1 = CommandLine.populateCommand(new App());
         assertEquals(null, app1.a);
     }
+
+    @Test
+    public void testDefaultValueWithVariable() {
+        @Command
+        class App {
+            @Option(names = "-a", defaultValue = "${VARIABLE:-555}")
+            int a;
+        }
+        System.setProperty("VARIABLE", "123");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(123, app1.a);
+    }
+
+    @Test
+    public void testDefaultValueWithVariableFallback() {
+        @Command
+        class App {
+            @Option(names = "-a", defaultValue = "${VARIABLE:-555}")
+            int a;
+        }
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(555, app1.a);
+    }
+
+    static class DefaultProviderWithVariables implements IDefaultValueProvider {
+        static String value = "${VARIABLE:-555}";
+        public String defaultValue(ArgSpec argSpec) throws Exception {
+            return value;
+        }
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesUsesFallbackIfNoSystemPropEnvVarOrResourceBundle() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class)
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(555, app1.a);
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesResolvesSystemProperty() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class)
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        System.setProperty("VARIABLE", "123");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(123, app1.a);
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesResolvesResourceBundle() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class,
+                resourceBundle = "picocli.DefaultProviderTestBundle")
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(789, app1.a);
+    }
+
+    @Test
+    public void testDefaultValueProviderWithVariablesPrefersSystemPropertyOverResourceBundle() {
+        @Command(defaultValueProvider = DefaultProviderWithVariables.class,
+            resourceBundle = "picocli.DefaultProviderTestBundle")
+        class App {
+            @Option(names = "-a")
+            int a;
+        }
+        System.setProperty("VARIABLE", "123");
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(123, app1.a);
+    }
+
+    /**
+     * Tests issue 1848 https://github.com/remkop/picocli/issues/1848
+     * Test to ensure that ArgGroups with a multiplicity of 1, with a required option, and with a default value
+     * provider, will properly show that required option as required, rather than optional.
+     * */
+    @Test
+    public void testIssue1848ArgGroupWithRequiredOptionWithDefaultValueProvider() {
+
+        @Command(name = "issue1848Command", defaultValueProvider = Issue1848CommandDefaultProvider.class)
+        class App {
+            @ArgGroup(exclusive = false, multiplicity = "1", order = 1)
+            public Issue1848CommandConfigOptions issue1848CommandConfigOptions;
+
+            @Option(names = {"--opt1"})
+            private String opt1;
+        }
+        String helpOutput = new CommandLine(new App()).getHelp().fullSynopsis();
+        assertTrue(helpOutput.contains("--opt2=<opt2>"));       // Check that "--opt2=<opt2>" exists.
+        assertFalse(helpOutput.contains("[--opt2=<opt2>]"));    // But make sure it's not surrounded by square brackets.
+    }
+
+    class Issue1848CommandConfigOptions {
+        @Option(names = {"--opt2"}, required = true, order = 1)
+        private String opt2;
+
+        @Option(names = {"--opt3"}, required = false, order = 2)
+        private String opt3;
+    }
+
+    static class Issue1848CommandDefaultProvider implements CommandLine.IDefaultValueProvider {
+        public String defaultValue(CommandLine.Model.ArgSpec argSpec) throws Exception {
+            // Commenting out for now as I'm unsure if it's expected behavior for default values supplied to a required
+            // option, should result in that option's help/usage information indicating that the option is not required.
+            /*
+            if (argSpec.isOption()) {
+                CommandLine.Model.OptionSpec option = (CommandLine.Model.OptionSpec) argSpec;
+                if ("--url".equals(option.longestName())) {
+                    return "https://localhost:8080";
+                }
+            }
+            */
+            return null;
+        }
+    }
+
 }

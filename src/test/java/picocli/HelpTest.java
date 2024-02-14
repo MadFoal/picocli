@@ -1340,6 +1340,64 @@ public class HelpTest {
     }
 
     @Test
+    public void testSortSynopsisByOptionOrderAllowsGaps() throws Exception {
+        @Command(sortOptions = false, sortSynopsis = false)
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 6) int d;
+            @Option(names = {"-e"}, order = 3) String[] e;
+            @Option(names = {"-f"}, order = 1) String[] f;
+            @Option(names = {"-g"}, order = 0) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "f", "e", "d", "c", "b", "a");
+        assertArrayEquals(expected, fields);
+
+        String expectedUsage = String.format("" +
+            "Usage: <main class> [-gcba] [-f=<f>]... [-e=<e>]... [-d=<d>]%n" +
+            "  -g%n" +
+            "  -f=<f>%n" +
+            "  -e=<e>%n" +
+            "  -d=<d>%n" +
+            "  -c%n" +
+            "  -b%n" +
+            "  -a%n");
+        assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
+    public void testSortSynopsisWithoutSortingOptions() throws Exception {
+        @Command(sortSynopsis = false)
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 6) int d;
+            @Option(names = {"-e"}, order = 3) String[] e;
+            @Option(names = {"-f"}, order = 1) String[] f;
+            @Option(names = {"-g"}, order = 0) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "f", "e", "d", "c", "b", "a");
+        assertArrayEquals(expected, fields);
+
+        String expectedUsage = String.format("" +
+            "Usage: <main class> [-gcba] [-f=<f>]... [-e=<e>]... [-d=<d>]%n" +
+            "  -a%n" +
+            "  -b%n" +
+            "  -c%n" +
+            "  -d=<d>%n" +
+            "  -e=<e>%n" +
+            "  -f=<f>%n" +
+            "  -g%n");
+        assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
     public void testSortByOptionOrderStableSortWhenEqualOrder() throws Exception {
         @Command(sortOptions = false)
         class App {
@@ -1366,6 +1424,65 @@ public class HelpTest {
                 "  -b%n" +
                 "  -a%n");
         assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
+    public void testSortSynopsisByOptionOrderStableSortWhenEqualOrder() throws Exception {
+        @Command(sortOptions = false, sortSynopsis = false)
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 7) int d;
+            @Option(names = {"-e"}, order = 7) String[] e;
+            @Option(names = {"-f"}, order = 7) String[] f;
+            @Option(names = {"-g"}, order = 0) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "c", "d", "e", "f", "b", "a");
+        assertArrayEquals(expected, fields);
+
+        String expectedUsage = String.format("" +
+            "Usage: <main class> [-gcba] [-d=<d>] [-e=<e>]... [-f=<f>]...%n" +
+            "  -g%n" +
+            "  -c%n" +
+            "  -d=<d>%n" +
+            "  -e=<e>%n" +
+            "  -f=<f>%n" +
+            "  -b%n" +
+            "  -a%n");
+        assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
+    public void testSortSynopsisWithEqualIndexAndNoClustering() throws Exception {
+        @Command(sortOptions = false, sortSynopsis = false)
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 7) int d;
+            @Option(names = {"-e"}, order = 7) String[] e;
+            @Option(names = {"-f"}, order = 7) String[] f;
+            @Option(names = {"-g"}, order = 0) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "c", "d", "e", "f", "b", "a");
+        assertArrayEquals(expected, fields);
+
+        String expectedUsage = String.format("" +
+            "Usage: <main class> [-g] [-c] [-d=<d>] [-e=<e>]... [-f=<f>]... [-b] [-a]%n" +
+            "  -g%n" +
+            "  -c%n" +
+            "  -d=<d>%n" +
+            "  -e=<e>%n" +
+            "  -f=<f>%n" +
+            "  -b%n" +
+            "  -a%n");
+        assertEquals(expectedUsage, new CommandLine(new App())
+            .setPosixClusteredShortOptionsAllowed(false).getUsageMessage());
     }
 
     @Test
@@ -1771,7 +1888,7 @@ public class HelpTest {
         final int[] count = {0};
         TextTable tt = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         tt = new TextTable(Help.Ansi.OFF, tt.columns()) {
-            @Override public void addRowValues(Text[] columnValues) {
+            @Override public void addRowValues(Text... columnValues) {
                 assertArrayEquals(values[count[0]], columnValues);
                 count[0]++;
             }
@@ -2035,7 +2152,7 @@ public class HelpTest {
         @Command(customSynopsis = {
                 "<the-app> --number=NUMBER --other-option=<aargh>",
                 "          --more=OTHER --and-other-option=<aargh>",
-                "<the-app> --number=NUMBER --and-other-option=<aargh>",
+                "<the-app> --number=NUMBER --and-other-option=<aargh>"
         })
         class App {@Option(names = "--ignored") boolean ignored;}
         Help help = new Help(new App(), Help.Ansi.OFF);
@@ -2055,7 +2172,7 @@ public class HelpTest {
                 "  -v, --verbose               show what you're doing while you are doing it%n" +
                 "  -p                          the quick brown fox jumped over the lazy dog. The%n" +
                 "                                quick brown fox jumped over the lazy dog.%n"
-                ,""), table.toString(new StringBuilder()).toString());
+                ), table.toString(new StringBuilder()).toString());
     }
 
     @SuppressWarnings("deprecation")
@@ -2081,7 +2198,7 @@ public class HelpTest {
                         "* -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
                         "        --create7, --create8%n" +
                         "                              description%n"
-                ,""), table.toString(new StringBuilder()).toString());
+                ), table.toString(new StringBuilder()).toString());
 
         table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         table.addRowValues("", "-c", ",",
@@ -2091,7 +2208,7 @@ public class HelpTest {
                         "  -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
                         "        --createAA7, --create8%n" +
                         "                              description%n"
-                ,""), table.toString(new StringBuilder()).toString());
+                ), table.toString(new StringBuilder()).toString());
     }
 
     @Test
@@ -2132,7 +2249,7 @@ public class HelpTest {
                         "  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB%n" +
                         "      --help               display this help and exit%n" +
                         "      --version            output version information and exit%n" +
-                        "Copyright(c) 2017%n", "");
+                        "Copyright(c) 2017%n");
         assertEquals(expected, baos.toString());
     }
 
@@ -2206,7 +2323,7 @@ public class HelpTest {
                         "                between each display.  Press CTRL+C to stop redisplaying%n" +
                         "                statistics.  If omitted, netstat will print the current%n" +
                         "                configuration information once.%n"
-                , "");
+                );
         assertEquals(expected, CustomLayoutDemo.createNetstatUsageFormat(Help.Ansi.OFF));
     }
 
@@ -3064,8 +3181,8 @@ public class HelpTest {
     public void test244SubcommandsNotParsed() {
         List<CommandLine> list = new CommandLine(new Top()).parse("-h", "sub");
         assertEquals(2, list.size());
-        assertTrue(list.get(0).getCommand() instanceof Top);
-        assertTrue(list.get(1).getCommand() instanceof Sub);
+        assertTrue(((Object) list.get(0).getCommand()) instanceof Top);
+        assertTrue(((Object) list.get(1).getCommand()) instanceof Sub);
         assertTrue(((Top) list.get(0).getCommand()).isUsageHelpRequested);
     }
 
@@ -3178,7 +3295,7 @@ public class HelpTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, baos.toString());
     }
 
@@ -3198,7 +3315,7 @@ public class HelpTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         assertEquals(expected, sw.toString());
     }
 
@@ -3485,9 +3602,9 @@ public class HelpTest {
         Method detectTerminalWidth = UsageMessageSpec.class.getDeclaredMethod("detectTerminalWidth");
         detectTerminalWidth.setAccessible(true);
 
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         int width = (Integer) detectTerminalWidth.invoke(null);
-        TestUtil.setTraceLevel("WARN");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.WARN);
 
         assertTrue(systemErrRule.getLog(), systemErrRule.getLog().startsWith("[picocli DEBUG] getTerminalWidth() executing command ["));
         //assertTrue(systemErrRule.getLog(),
@@ -4270,12 +4387,17 @@ public class HelpTest {
 
     @Test
     public void testUsageMessageSpec_LongOptionsColumnLengthMinimum_Minimum20() {
-        try {
-            CommandSpec.create().usageMessage().longOptionsMaxWidth(19);
-            fail("Expected exception");
-        } catch (InitializationException ok) {
-            assertEquals("Invalid usage long options max width 19. Minimum value is 20", ok.getMessage());
-        }
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+        cmd.setUsageHelpLongOptionsMaxWidth(20);
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
+
+        CommandLine returnValue = cmd.setUsageHelpLongOptionsMaxWidth(19);
+
+        assertEquals(20, cmd.getUsageHelpLongOptionsMaxWidth());
+        assertEquals(20, cmd.getCommandSpec().usageMessage().longOptionsMaxWidth());
+
+        String expected = "Invalid usage long options max width 19. Minimum value is 20";
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains(expected));
     }
 
     @Test
@@ -4283,12 +4405,13 @@ public class HelpTest {
         UsageMessageSpec spec = CommandSpec.create().usageMessage();
         spec.longOptionsMaxWidth(spec.width() - 20);
         assertEquals(60, spec.longOptionsMaxWidth());
-        try {
-            spec.longOptionsMaxWidth(61);
-            fail("Expected exception");
-        } catch (InitializationException ok) {
-            assertEquals("Invalid usage long options max width 61. Value must not exceed width(80) - 20", ok.getMessage());
-        }
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
+
+        spec.longOptionsMaxWidth(61);
+        assertEquals(60, spec.longOptionsMaxWidth());
+
+        String expected = "Invalid usage long options max width 61. Value must not exceed width(80) - 20";
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains(expected));
     }
 
     @Test
@@ -5001,7 +5124,7 @@ public class HelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [COMMAND]%n" +
                 "Commands:%n" +
-                "  help  Displays help information about the specified command%n");
+                "  help  Display help information about the specified command.%n");
         String actual = new CommandLine(new MyTool()).getUsageMessage();
         assertEquals(expected, actual);
     }
@@ -5056,5 +5179,15 @@ public class HelpTest {
                 "  -u, --user       The connecting user name.%n");
         String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIssue1834SynopsisForCharArrayOption() {
+        @Command() class App {
+            @Option(names = {"--password", "-p"}, interactive = true, echo = false, arity = "0..1", required = true)
+            private char[] password;;
+        }
+        Help help = new Help(new App());
+        assertEquals("<main class> -p[=<password>]" + LINESEP, help.synopsis(0));
     }
 }

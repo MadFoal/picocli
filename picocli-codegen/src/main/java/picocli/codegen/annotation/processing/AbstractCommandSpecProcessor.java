@@ -4,6 +4,7 @@ import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Model;
 import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IAnnotatedElement;
@@ -59,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
+import static java.util.Collections.disjoint;
 import static javax.lang.model.element.ElementKind.ENUM;
 
 /**
@@ -92,6 +94,7 @@ import static javax.lang.model.element.ElementKind.ENUM;
 public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     private static final String COMMAND_DEFAULT_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
     private static Logger logger = Logger.getLogger(AbstractCommandSpecProcessor.class.getName());
+    private static boolean loadBundlesDuringAnnotationProcessing;
 
     /** The ProcessingEnvironment set by the {@link #init(ProcessingEnvironment)} method. */
     protected ProcessingEnvironment processingEnv;
@@ -170,6 +173,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             return false;
         }
     }
+    /**
+     * During annotation processing, resource bundles may not be available on the
+     * classpath and thereby cause failures.
+     * For that reason, by default, resource bundles are not loaded during annotation processing.
+     * This method allows for enabling loading of resource bundles during annotation processing.
+     *
+     * @since 4.8.0
+     * @param loadBundles true if bundles should be loaded, false (default) if bundles should not be loaded
+     */
+    public static final void setLoadResourceBundles(boolean loadBundles) {
+        loadBundlesDuringAnnotationProcessing = loadBundles;
+    }
 
     private static String stacktrace(Exception e) {
         StringWriter writer = new StringWriter();
@@ -178,7 +193,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private boolean tryProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
+        Model.Messages.setLoadBundles(loadBundlesDuringAnnotationProcessing);
         new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
 
         Context context = new Context();
@@ -228,11 +243,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private CommandSpec buildCommand(Element element, final Context context, final RoundEnvironment roundEnv) {
+        return buildCommand(true, element, context, roundEnv);
+    }
+    @SuppressWarnings("deprecation")
+    private CommandSpec buildCommand(boolean reuseExisting, Element element, final Context context, final RoundEnvironment roundEnv) {
         debugElement(element, "@Command");
 
-        CommandSpec result = context.commands.get(element);
-        if (result != null) {
-            return result;
+        CommandSpec result = null;
+        if (reuseExisting) { // #1440 subcommands should create separate instances
+            result = context.commands.get(element);
+            if (result != null) {
+                return result;
+            }
         }
         result = CommandSpec.wrapWithoutInspection(element);
         result.interpolateVariables(false);
@@ -300,21 +322,21 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
     private boolean isSubcommand(ExecutableElement method, RoundEnvironment roundEnv) {
         Element typeElement = method.getEnclosingElement();
-        if (typeElement.getAnnotation(Command.class) != null && typeElement.getAnnotation(Command.class).addMethodSubcommands()) {
-            return true;
-        }
-        if (typeElement.getAnnotation(Command.class) == null) {
-            Set<Element> elements = new HashSet<Element>(typeElement.getEnclosedElements());
+        Command cmd = typeElement.getAnnotation(Command.class);
 
-            // The class is a Command if it has any fields or methods annotated with the below:
-            return roundEnv.getElementsAnnotatedWith(Option.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Parameters.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Mixin.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(ArgGroup.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Unmatched.class).removeAll(elements)
-                    || roundEnv.getElementsAnnotatedWith(Spec.class).removeAll(elements);
+        if (cmd != null) {
+            return cmd.addMethodSubcommands();
         }
-        return false;
+
+        List<? extends Element> elements = typeElement.getEnclosedElements();
+
+        // The class is a Command if it has any fields or methods annotated with the below:
+        return !disjoint(roundEnv.getElementsAnnotatedWith(Option.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Parameters.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Mixin.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(ArgGroup.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Unmatched.class), elements)
+                || !disjoint(roundEnv.getElementsAnnotatedWith(Spec.class), elements);
     }
 
     private Stack<TypeElement> buildTypeHierarchy(TypeElement typeElement) {
@@ -386,7 +408,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.fine("Processing subcommand: " + subcommandElement);
 
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
-                CommandSpec commandSpec = buildCommand(subcommandElement, context, roundEnv);
+                CommandSpec commandSpec = buildCommand(false, subcommandElement, context, roundEnv);
                 result.add(commandSpec);
             }
         }

@@ -35,6 +35,8 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
     final boolean isCollection;
     final boolean isMap;
 
+    final boolean isCharArray;
+
     public CompileTimeTypeInfo(TypeMirror asType) {
         typeMirror = asType;
 
@@ -68,11 +70,14 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
                     logger.finest("fixed aux (for single type): " + aux);
                 }
             }
+            isCharArray = false;
         } else if (typeMirror.getKind() == TypeKind.ARRAY) {
             aux = Arrays.asList(((ArrayType) typeMirror).getComponentType());
             actualGenericTypeArguments = Arrays.asList(aux.get(0).toString());
+            isCharArray = "char".equals(aux.get(0).toString());
         } else {
             actualGenericTypeArguments = Collections.emptyList();
+            isCharArray = false;
         }
         auxTypeMirrors = aux;
         typeElement = tempTypeElement;
@@ -150,7 +155,7 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
     }
 
     static boolean isBooleanType(TypeMirror type) {
-        return type.getKind() == TypeKind.BOOLEAN || "java.lang.Boolean".equals(type.toString());
+        return type.getKind() == TypeKind.BOOLEAN || "java.lang.Boolean".equals(type.toString()) || "java.util.Optional<java.lang.Boolean>".equals(type.toString());
     }
 
     @Override
@@ -166,7 +171,7 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
 
     @Override
     public boolean isArray() {
-        return typeMirror.getKind() == TypeKind.ARRAY;
+        return typeMirror.getKind() == TypeKind.ARRAY && !isCharArray;
     }
 
     @Override
@@ -210,6 +215,7 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
      * @return the fully qualified class name of the type
      */
     @Override
+    @SuppressWarnings("deprecation")
     public String getClassName() {
         if (typeElement == null) {
             return typeMirror.toString();

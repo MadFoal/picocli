@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,9 +37,18 @@ public class TestUtil {
     /**
      * Set the trace level to one of "DEBUG", "INFO", "WARN", "OFF".
      * @param level one of "DEBUG", "INFO", "WARN", "OFF".
+     * @deprecated use {@link #setTraceLevel(CommandLine.TraceLevel)} instead
      */
     public static void setTraceLevel(String level) {
         System.setProperty("picocli.trace", level);
+    }
+
+    /**
+     * Set the trace level to one of "DEBUG", "INFO", "WARN", "OFF".
+     * @param level the trace level to set.
+     */
+    public static void setTraceLevel(CommandLine.TraceLevel level) {
+        System.setProperty("picocli.trace", String.valueOf(level));
     }
 
     public static String usageString(Object annotatedObject, Ansi ansi) {
@@ -151,9 +161,7 @@ public class TestUtil {
     }
 
     public static <T> Set<T> setOf(T... elements) {
-        Set<T> result = new HashSet<T>();
-        for (T t : elements) { result.add(t); }
-        return result;
+        return new HashSet<T>(Arrays.asList(elements));
     }
 
     public static <K, V> Map<K, V> mapOf(K k1, V v1) {

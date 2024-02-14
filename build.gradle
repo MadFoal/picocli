@@ -6,23 +6,23 @@ version "$projectVersion"
 ext.moduleName = 'info.picocli'
 
 buildscript {
+    apply from: 'dependencies.gradle'
+
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        gradlePluginPortal()
         mavenCentral()
     }
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-jvm:$asciidoctorGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctorj-pdf:1.6.0'
-        classpath "gradle.plugin.org.beryx:badass-jar:1.1.3"
-        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:5.1.2'
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.0"
+        classpath 'org.asciidoctor:asciidoctorj-pdf:2.3.9'
+        classpath "org.beryx:badass-jar:2.0.0"
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.0'
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
+        classpath "net.ltgt.gradle:gradle-errorprone-plugin:3.1.0"
     }
 }
 
-apply plugin: "org.beryx.jar"
 apply plugin: 'io.codearte.nexus-staging'
 
 if (System.getenv('MAVEN_OSS_USER')) { // on home system
@@ -61,11 +61,33 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
 allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
+    apply plugin: 'org.beryx.jar' // for compiling module-info on Java 8
 
-    sourceCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
-            1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
-    targetCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
-            1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
+    // https://errorprone.info/docs/installation requires Java 11+
+    if (JavaVersion.current().isJava11Compatible()) {
+        apply plugin: "net.ltgt.errorprone"
+
+        dependencies {
+            errorprone("com.google.errorprone:error_prone_core:2.23.0")
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+           options.errorprone.disableAllWarnings = true
+        }
+    }
+
+    if (!JavaVersion.current().isJava9Compatible()) {
+        sourceCompatibility = 1.5
+        targetCompatibility = 1.5
+    } else { // from Java 9 and up
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+//        tasks.withType(JavaCompile).configureEach {
+//            javaCompiler = javaToolchains.compilerFor {
+//                languageVersion = JavaLanguageVersion.of(JavaVersion.current().majorVersion)
+//            }
+//        }
+    }
 
     compileJava.options.encoding = "UTF-8"
     compileTestJava.options.encoding = "UTF-8"
@@ -82,12 +104,13 @@ allprojects {
         }
     }
     dependencies {
-        testImplementation "junit:junit:$junitVersion",
-                           "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
-                           "org.fusesource.jansi:jansi:$jansiVersion",
-                           "org.codehaus.groovy:groovy-all:$groovyVersion",
-                           "com.github.stefanbirkner:system-rules:$systemRulesVersion",
-                           "pl.pragmatists:JUnitParams:1.1.1"
+        testImplementation supportDependencies.jansi
+        testImplementation supportDependencies.groovy
+
+        testImplementation supportDependencies.junit
+        testImplementation supportDependencies.hamcrestCore
+        testImplementation supportDependencies.systemRules
+        testImplementation supportDependencies.junitParams
     }
     tasks.withType(JavaCompile) {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
@@ -95,29 +118,63 @@ allprojects {
 
     javadoc.destinationDir = file("build/docs/apidocs")
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+    // Workaround frpm https://bugs.openjdk.org/browse/JDK-4973681
+    javadoc.options.addStringOption('sourcepath', 'src/main/java')
 
-    // work around https://github.com/gradle/gradle/issues/4046
-    javadoc.dependsOn('copyJavadocDocFiles')
-    task copyJavadocDocFiles(type: Copy) {
-        from('src/main/java')
-        into 'build/docs/apidocs'
-        include '**/doc-files/*.*'
+    if (!project.name in ['picocli-examples', 'picocli-annotation-processing-tests']) {
+        //sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
+        compileJava {
+            inputs.property("moduleName", moduleName)
+            //    doFirst {
+            //        logger.info("Java version is " + JavaVersion.current())
+            //        if (JavaVersion.current().isJava9Compatible()) {
+            //            options.compilerArgs = [
+            //                '--module-path', classpath.asPath,
+            //            ]
+            //        }
+            //        // classpath = files()
+            //        classpath = sourceSets.main.runtimeClasspath
+            //        logger.info("options.compilerArgs is " + options.compilerArgs)
+            //        logger.info("classpath is " + classpath.files)
+            //    }
+        }
+        moduleConfig {
+            // copy module-info.class to META-INF/versions/9
+            multiReleaseVersion = 9
+            moduleInfoPath = 'src/main/java9/module-info.java'
+            version = project.version
+            neverCompileModuleInfo = true
+        }
+    }
+
+    normalization {
+        runtimeClasspath {
+            metaInf {
+                ignoreAttribute("Bnd-LastModified")
+            }
+        }
     }
 }
 
-sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
+//sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
 compileJava {
     inputs.property("moduleName", moduleName)
-    doFirst {
-        if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
-            options.compilerArgs = [
-                    '--module-path', classpath.asPath,
-            ]
-        }
-        classpath = files()
-    }
+//    doFirst {
+//        if (JavaVersion.current().isJava9Compatible()) {
+//            options.compilerArgs = [
+//                    '--module-path', classpath.asPath,
+//            ]
+//        }
+//        classpath = files()
+//    }
 }
-
+moduleConfig {
+    // copy module-info.class to META-INF/versions/9
+    multiReleaseVersion = 9
+    moduleInfoPath = 'src/main/java9/module-info.java'
+    version = project.version
+    neverCompileModuleInfo = true
+}
 jar {
     manifest {
         attributes 'Specification-Title'   : 'picocli',
@@ -128,16 +185,52 @@ jar {
                    'Implementation-Version': archiveVersion.get(),
                    'Main-Class'            : 'picocli.AutoComplete'
     }
-    // copy module-info.class to META-INF/versions/9
-    multiRelease = true
+}
+configurations {
+    apiElements {
+        canBeConsumed = true
+        canBeResolved = false
+        attributes {
+            attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.LIBRARY))
+            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+            // not sure why the below is needed, but when building with Java 8, using VERSION_1_5 gives this error:
+            //
+            // Could not determine the dependencies of task ':picocli-codegen:compileTestJava'.
+            //> Could not resolve all task dependencies for configuration ':picocli-codegen:testCompileClasspath'.
+            //   > Could not resolve project :.
+            //     Required by:
+            //         project :picocli-codegen
+            //      > The consumer was configured to find an API of a library compatible with Java 6,
+            //        preferably in the form of class files, preferably optimized for standard JVMs, and its dependencies declared externally.
+            //        However we cannot choose between the following variants of project ::
+            //          - apiElements
+            //          - runtimeElements
+            //        All of them match the consumer attributes:
+            //          - Variant 'apiElements' capability info.picocli:picocli:4.7.0-SNAPSHOT declares a runtime of a library compatible with Java 5, packaged as a jar, and its dependencies declared externally:
+            //              - Unmatched attribute:
+            //                  - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+            //          - Variant 'runtimeElements' capability info.picocli:picocli:4.7.0-SNAPSHOT declares a runtime of a library compatible with Java 5, packaged as a jar, and its dependencies declared externally:
+            //              - Unmatched attribute:
+            //                  - Doesn't say anything about its target Java environment (preferred optimized for standard JVMs)
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, new Integer(JavaVersion.VERSION_1_6.majorVersion))
+
+        }
+    }
+}
+// jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
+if (JavaVersion.current().isJava11Compatible()) {
+    project.logger.lifecycle("skipping jacoco test for Java version ${JavaVersion.current()}")
+} else {
+    project.logger.lifecycle("applying jacoco build file for Java version ${JavaVersion.current()}")
+    apply from: "gradle/jacoco.gradle"
 }
 
-// jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
-if (org.gradle.api.JavaVersion.current().isJava11Compatible()) {
-    project.logger.lifecycle("skipping jacoco test for Java version ${org.gradle.api.JavaVersion.current()}")
-} else {
-    project.logger.lifecycle("applying jacoco build file for Java version ${org.gradle.api.JavaVersion.current()}")
-    apply from: "gradle/jacoco.gradle"
+if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
+    // https://github.com/remkop/picocli/issues/1503
+    test { // explicitly enable security manager on Java 18 for System.exit tests
+        systemProperty "java.security.manager", "allow"
+    }
 }
 
 // javadoc and asciidoc customization

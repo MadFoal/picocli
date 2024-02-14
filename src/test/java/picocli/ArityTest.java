@@ -392,6 +392,24 @@ public class ArityTest {
     }
 
     @Test
+    public void test1125_ArrayOptionArity2_nConsumesAllArgumentsWhenAllowOptionsAsOptionParameters() {
+        class ArrayOptionsArity2_nAndParameters {
+            @Parameters String[] stringParams;
+            @Option(names = "-s", arity = "2..*") String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        ArrayOptionsArity2_nAndParameters params = new ArrayOptionsArity2_nAndParameters();
+        new CommandLine(params).setAllowOptionsAsOptionParameters(true)
+            .parseArgs("-s 1.1 2.2 3.3 4.4 -vfFILE 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+            new String[] {"1.1", "2.2", "3.3", "4.4", "-vfFILE", "5.5"}, params.stringOptions);
+        assertFalse(params.verbose);
+        assertEquals(null, params.file);
+        assertNull(params.stringParams);
+    }
+
+    @Test
     public void testArrayOptionArity2_nConsumesAllArgumentIncludingQuotedSimpleOption() {
         class ArrayOptionArity2_nAndParameters {
             @Parameters String[] stringParams;
@@ -462,14 +480,47 @@ public class ArityTest {
     @Test
     public void testArrayOptionArityNConsumeAllArguments() {
         class ArrayOptionArityNAndParameters {
-            @Parameters char[] charParams;
+            @Parameters int[] intParams;
+            @Option(names = "-ints", arity = "*") int[] intOptions;
+        }
+        ArrayOptionArityNAndParameters
+                params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-ints 1 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.intOptions),
+                new int[] {1, 2, 3, 4}, params.intOptions);
+        assertArrayEquals(null, params.intParams);
+    }
+
+    @Test
+    public void testCharacterArrayOptionArityNConsumeAllArguments() {
+        class ArrayOptionArityNAndParameters {
+            @Parameters Character[] cParams;
+            @Option(names = "-chars", arity = "*") Character[] cOptions;
+        }
+        ArrayOptionArityNAndParameters
+            params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars a b c d".split(" "));
+        assertArrayEquals(Arrays.toString(params.cOptions),
+            new Character[] {'a', 'b', 'c', 'd'}, params.cOptions);
+        assertArrayEquals(null, params.cParams);
+    }
+
+    @Test
+    public void testCharArrayOptionArityNConsumeSingleArgDisallowsMultiArgs() {
+        class ArrayOptionArityNAndParameters {
+            @Parameters(arity = "0..1") char[] charParams;
             @Option(names = "-chars", arity = "*") char[] charOptions;
         }
         ArrayOptionArityNAndParameters
-                params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars a b c d".split(" "));
+            params = CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars abcd".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
+            new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
         assertArrayEquals(null, params.charParams);
+
+        try {
+            CommandLine.populateCommand(new ArrayOptionArityNAndParameters(), "-chars a b c d".split(" "));
+            fail("expected MissingParameterException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments from index 3: 'c', 'd'", ex.getMessage());
+        }
     }
     @Test
     public void testMissingRequiredParams() {
@@ -679,7 +730,7 @@ public class ArityTest {
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABooleanWithUnmatchedArgsAllowed() { // ignores varargs
-        setTraceLevel("OFF");
+        setTraceLevel(CommandLine.TraceLevel.OFF);
         CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(Arrays.asList("-234"), cmd.getUnmatchedArguments());
@@ -997,19 +1048,82 @@ public class ArityTest {
     @Test
     public void testArrayOptionWithoutArityConsumesOneArgument() { // #192
         class OptionsNoArityAndParameters {
-            @Parameters char[] charParams;
+            @Parameters int[] intParams;
+            @Option(names = "-ints") int[] intOptions;
+        }
+        OptionsNoArityAndParameters
+                params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-ints 1 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.intOptions),
+                new int[] {1, }, params.intOptions);
+        assertArrayEquals(Arrays.toString(params.intParams), new int[] {2, 3, 4}, params.intParams);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-ints 1 -ints 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.intOptions),
+                new int[] {1, 2, }, params.intOptions);
+        assertArrayEquals(Arrays.toString(params.intParams), new int[] {3, 4}, params.intParams);
+
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-ints".split(" "));
+            fail("expected MissingParameterException");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required parameter for option '-ints' (<intOptions>)", ok.getMessage());
+            assertEquals(1, ok.getMissing().size());
+            assertTrue(ok.getMissing().get(0).toString(), ok.getMissing().get(0) instanceof Model.OptionSpec);
+        }
+    }
+
+    @Test
+    public void testCharacterArrayOptionWithoutArityConsumesOneArgument() { // #192
+        class OptionsNoArityAndParameters {
+            @Parameters Character[] cParams;
+            @Option(names = "-chars") Character[] cOptions;
+        }
+        OptionsNoArityAndParameters
+            params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars 1 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.cOptions),
+            new Character[] {'1', }, params.cOptions);
+        assertArrayEquals(Arrays.toString(params.cParams), new Character[] {'2', '3', '4'}, params.cParams);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars 1 -chars 2 3 4".split(" "));
+        assertArrayEquals(Arrays.toString(params.cOptions),
+            new Character[] {'1', '2', }, params.cOptions);
+        assertArrayEquals(Arrays.toString(params.cParams), new Character[] {'3', '4'}, params.cParams);
+
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars".split(" "));
+            fail("expected MissingParameterException");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required parameter for option '-chars' (<cOptions>)", ok.getMessage());
+            assertEquals(1, ok.getMissing().size());
+            assertTrue(ok.getMissing().get(0).toString(), ok.getMissing().get(0) instanceof Model.OptionSpec);
+        }
+    }
+
+    @Test
+    public void testCharArrayOption() { // #192
+        class OptionsNoArityAndParameters {
+            @Parameters(arity = "0..1") char[] charParams;
             @Option(names = "-chars") char[] charOptions;
         }
         OptionsNoArityAndParameters
-                params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars a b c d".split(" "));
+            params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars abcd".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', }, params.charOptions);
-        assertArrayEquals(Arrays.toString(params.charParams), new char[] {'b', 'c', 'd'}, params.charParams);
+            new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
+        assertArrayEquals(Arrays.toString(params.charParams), null, params.charParams);
 
-        // repeated occurrence
-        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars a -chars b c d".split(" "));
+        // repeated occurrence disallowed
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars ab -chars cd".split(" "));
+            fail("Expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals("option '-chars' (<charOptions>) should be specified only once", ex.getMessage());
+        }
+
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars ab cd".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', 'b', }, params.charOptions);
+            new char[] {'a', 'b', }, params.charOptions);
         assertArrayEquals(Arrays.toString(params.charParams), new char[] {'c', 'd'}, params.charParams);
 
         try {
@@ -1373,7 +1487,64 @@ public class ArityTest {
         } catch (MissingParameterException ex) {
             assertEquals(expected, ex.getMessage());
         }
+    }
+    @Test
+    public void test1125_ArityValidation() {
+        class Cmd {
+            @Option(names = "-a", arity = "2") String[] a;
+            @Option(names = "-b", arity = "1..2") String[] b;
+            @Option(names = "-c", arity = "2..3") String[] c;
+            @Option(names = "-v") boolean verbose;
+        }
+        assertWithAllowOptions("Unmatched argument at index 3: '2'",
+            new Cmd(), "-a", "1", "-a", "2");
 
+        Cmd bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-a", "1", "-v");
+        assertArrayEquals(new String[]{"1", "-v"}, bean.a);
+
+        bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-b", "-v");
+        assertArrayEquals(new String[]{"-v"}, bean.b);
+
+        assertWithAllowOptions("option '-c' at index 0 (<c>) requires at least 2 values, but only 1 were specified: [-a]",
+            new Cmd(), "-c", "-a");
+
+        bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-c", "-a", "1", "2");
+        assertArrayEquals(new String[]{"-a", "1", "2"}, bean.c);
+
+        bean = new Cmd();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-c", "1", "-a");
+        assertArrayEquals(new String[]{"1", "-a"}, bean.c);
+    }
+    @Test
+    public void test1125_ArityValidationWithMaps() {
+        class Cmd {
+            @Option(names = "-a", arity = "2") Map<String,String> a;
+            @Option(names = "-b", arity = "1..2") Map<String,String> b;
+            @Option(names = "-c", arity = "2..3") Map<String,String> c;
+            @Option(names = "-v") boolean verbose;
+        }
+        assertWithAllowOptions("Value for option option '-a' at index 0 (<String=String>) should be in KEY=VALUE format but was -a",
+            new Cmd(), "-a", "A=B", "-a", "C=D");
+
+        assertWithAllowOptions("Value for option option '-a' at index 0 (<String=String>) should be in KEY=VALUE format but was -v",
+            new Cmd(), "-a", "A=B", "-v");
+
+        assertWithAllowOptions("Value for option option '-b' at index 0 (<String=String>) should be in KEY=VALUE format but was -v",
+            new Cmd(), "-b", "-v");
+
+        assertWithAllowOptions("Value for option option '-c' at index 0 (<String=String>) should be in KEY=VALUE format but was -a",
+            new Cmd(), "-c", "A=B", "-a");
+    }
+    private void assertWithAllowOptions(String expected, Object command, String... args) {
+        try {
+            new CommandLine(command).setAllowOptionsAsOptionParameters(true).parseArgs(args);
+            fail("Expected unmatched arg exception");
+        } catch (ParameterException ex) {
+            assertEquals(expected, ex.getMessage());
+        }
     }
 
     @Test
@@ -1433,7 +1604,7 @@ public class ArityTest {
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
-        assertTrue(systemErrRule.getLog().contains("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters."));
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters."));
     }
 
     @Test
@@ -1640,7 +1811,7 @@ public class ArityTest {
             private String destination;
         }
 
-        //setTraceLevel("DEBUG");
+        //setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         new CommandLine(app)
                 .setOverwrittenOptionsAllowed(true)
@@ -1809,6 +1980,32 @@ public class ArityTest {
 
         app = new App();
         new CommandLine(app).parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
+    }
+
+    @Test
+    public void test1125_CustomEndOfOptionsDelimiter() {
+        class App {
+            @Option(names = "-x", arity = "*")
+            List<String> option;
+
+            @Unmatched
+            List<String> unmatched;
+        }
+
+        App app = new App();
+        new CommandLine(app).setAllowOptionsAsOptionParameters(true).setEndOfOptionsDelimiter(";")
+            .parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).setAllowOptionsAsOptionParameters(true).parseArgs("-x", "a", "b", "--", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).setAllowOptionsAsOptionParameters(true).parseArgs("-x", "a", "b", ";", "x", "y");
         assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
     }
 

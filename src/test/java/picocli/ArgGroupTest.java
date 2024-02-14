@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.*;
 import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.withMixin;
 
+@SuppressWarnings("EqualsHashCode") // https://errorprone.info/bugpattern/EqualsHashCode
 public class ArgGroupTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -253,7 +254,7 @@ public class ArgGroupTest {
             spec.addArgGroup(group);
             fail("Expected exception");
         } catch (CommandLine.DuplicateNameException ex) {
-            assertEquals("An option cannot be in multiple groups but -x is in (-x) and [-x]. " +
+            assertEquals("An option cannot be in multiple groups but -x is in -x and [-x]. " +
                     "Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten " +
                     "as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).", ex.getMessage());
         }
@@ -1450,7 +1451,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1484,7 +1485,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        TestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1518,7 +1519,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //TestUtil.setTraceLevel("INFO");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.INFO);
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1568,7 +1569,7 @@ public class ArgGroupTest {
             @ArgGroup(exclusive = true, multiplicity = "0..3")
             Composite[] composite;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
@@ -1768,7 +1769,7 @@ public class ArgGroupTest {
 
     @Test
     public void testRepeatingGroupsValidation() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
 
         RepeatingApp app = new RepeatingApp();
         CommandLine cmd = new CommandLine(app);
@@ -1776,7 +1777,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-a", "1");
             fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Error: Group: (-a=<a>) must be specified 2 times but was matched 1 times", ex.getMessage());
+            assertEquals("Error: Group: -a=<a> must be specified 2 times but was matched 1 times", ex.getMessage());
         }
     }
 
@@ -2071,7 +2072,7 @@ public class ArgGroupTest {
     public void testIssue1054() {
         //-f pattern1 -f pattern2 -d --> accepted --> wrong: findPattern = "pattern2", "pattern1" is lost/ignored
         try {
-            //TestUtil.setTraceLevel("DEBUG");
+            //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
             Issue1054 bean3 = new Issue1054();
             new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2 -d".split(" "));
             //System.out.println(bean3);
@@ -2147,6 +2148,24 @@ public class ArgGroupTest {
         } catch (MissingParameterException ex) {
             assertEquals("Expected parameter for option '--replace-with' but found '-d'", ex.getMessage());
         }
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1125
+    public void testIssue1125Case1a() {
+        //-f -f -w text --> accepted --> wrong: findPattern = "-f", means, the second -f is treated as an option-parameter for the first -f
+        Issue1054 bean = new Issue1054();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-f -f -w text".split(" "));
+        assertEquals("-f", bean.modifications.get(0).findPattern.pattern());
+        assertEquals("text", bean.modifications.get(0).change.replacement);
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1125
+    public void testIssue1125Case1b() {
+        //-f pattern -w -d --> wrong: replacement = "-d", means -d is treated as an option-parameter for -w
+        Issue1054 bean = new Issue1054();
+        new CommandLine(bean).setAllowOptionsAsOptionParameters(true).parseArgs("-f pattern -w -d".split(" "));
+        assertEquals("pattern", bean.modifications.get(0).findPattern.pattern());
+        assertEquals("-d", bean.modifications.get(0).change.replacement);
     }
 
     static class CompositeGroupSynopsisDemo {
@@ -2370,8 +2389,8 @@ public class ArgGroupTest {
     @Test
     public void testIssue722() {
         String expected = String.format("" +
-                "create --level-0 <l0> (--level-1 <l1> (--level-2a <l2a>) (--level-2b <l2b>%n" +
-                "       (--level-3a <l3a>) (--level-3b <l3b>)))%n");
+                "create --level-0 <l0> (--level-1 <l1> --level-2a <l2a> (--level-2b <l2b>%n" +
+                "       --level-3a <l3a> --level-3b <l3b>))%n");
 
         CommandLine cmd = new CommandLine(new Issue722.CreateCommand());
         Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
@@ -2471,7 +2490,7 @@ public class ArgGroupTest {
     @Test
     // https://github.com/remkop/picocli/issues/746
     public void test746DefaultValue() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandWithDefaultValue bean = new CommandWithDefaultValue();
         CommandLine cmd = new CommandLine(bean);
 
@@ -2590,7 +2609,7 @@ public class ArgGroupTest {
     @Test
     // https://github.com/remkop/picocli/issues/742
     public void testIssue742FalseErrorMessage() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new Issue742());
         ParseResult parseResult = cmd.parseArgs("-g=2", "-g=3");
         List<ParseResult.GroupMatch> multiples = parseResult.getGroupMatches();
@@ -2742,7 +2761,7 @@ public class ArgGroupTest {
 
     @Test
     public void testIssue829NPE_inSubcommandWithArgGroup() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         ParseResult parseResult = new CommandLine(new Issue829TopCommand()).parseArgs("-x=1", "sub", "-y=2");
         assertEquals(1, ((Issue829TopCommand)parseResult.commandSpec().userObject()).group.x);
 
@@ -2766,7 +2785,7 @@ public class ArgGroupTest {
     }
     @Test
     public void testIssue815() {
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         Issue815 userObject = new Issue815();
         new CommandLine(userObject).parseArgs("--id=123", "--id=456");
         assertNotNull(userObject.group);
@@ -3933,7 +3952,7 @@ public class ArgGroupTest {
         class App {
             @ArgGroup CriteriaWithEnvironment criteria;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new App());
         try {
             cmd.parseArgs("-e", "X");
@@ -3960,7 +3979,7 @@ public class ArgGroupTest {
             @ArgGroup
             Issue1260GetterMethod group;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         cmd.parseArgs("-x", "123");
@@ -3992,7 +4011,7 @@ public class ArgGroupTest {
             @ArgGroup
             Issue1260SetterMethod group;
         }
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         cmd.parseArgs("-x", "3");
@@ -4033,7 +4052,7 @@ public class ArgGroupTest {
         PrintStream capture = new PrintStream(baos, true);
         System.setErr(capture);
 
-        //TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel(CommandLine.TraceLevel.DEBUG);
         CommandLine cmd = new CommandLine(new Issue1300());
         cmd.getUsageMessage(); // this causes initial values of all options to be cached
 
@@ -4134,8 +4153,8 @@ public class ArgGroupTest {
 
         }
     }
-    
-    
+
+
     // String literals for Issue 1409
     final String sampleX = "ANOTHER VALUE";
     final String errorX = "Default value for X incorrect";
@@ -4313,4 +4332,112 @@ public class ArgGroupTest {
         assertEquals(errorB2,"z", obj.optXAndGroupOneOrGroupTwo.oneORtwo.two.b2);
     }
 
+    static class Issue1680MultiplicityZeroCausesInfiniteLoop {
+        static class MyGroup {
+            @Option(names = "-x") String x;
+        }
+
+        @ArgGroup(multiplicity = "0")
+        MyGroup myGroup;
+    }
+
+    @Test
+    public void testIssue1680MultiplicityZeroCausesInfiniteLoop() {
+        final Object obj = new Issue1680MultiplicityZeroCausesInfiniteLoop();
+        try {
+            new CommandLine(obj).parseArgs("-x", "abc");
+            fail("Expected exception");
+        } catch (InitializationException good) {
+            assertEquals("ArgGroup must have multiplicity that allows at least one occurrence, but had multiplicity=0", good.getMessage());
+        }
+    }
+
+    @Test
+    public void testReuseBothCommandLineAndUserObjectWithArgGroup() {
+        MyCommand userObject = new MyCommand();
+        CommandLine cmdLine = new CommandLine(userObject);
+        cmdLine.execute("--group", "group", "--option", "option");
+        cmdLine.execute();
+        assertNull("Expected option to be reset to null", userObject.option);
+        assertNull("Expected group option to be reset to null", userObject.group.option);
+    }
+
+    @Command(name = "command")
+    static class MyCommand implements Runnable {
+        @Option(names = "--option"/*, defaultValue = Option.NULL_VALUE*/)
+        private String option;
+
+        @ArgGroup
+        private Group group = new Group();
+
+        private static class Group {
+            @Option(names = "--group", defaultValue = Option.NULL_VALUE)
+            private String option;
+        }
+
+        public void run() {
+        }
+    }
+
+    @Command(name = "multiplicity")
+    static class Issue2059Multiplicity {
+
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        RequiredGroup requiredGroup;
+
+        static class RequiredGroup {
+            @Option(names = "--option_one")
+            private String optionOne;
+
+            @Option(names = "--option_two")
+            private String optionTwo;
+        }
+    }
+
+    @Test
+    public void testIssue2059() {
+        Issue2059Multiplicity obj = new Issue2059Multiplicity();
+        try {
+            new CommandLine(obj).parseArgs();
+            fail("Expected exception");
+        } catch (ParameterException ok) {
+            assertEquals("Error: Missing required argument(s): ([--option_one=<optionOne>] [--option_two=<optionTwo>])", ok.getMessage());
+        }
+    }
+
+    static class Issue947RequireOneOrBothNotNoneGroup {
+        @Option(names = {"-f", "--feature"}) String feature;
+        @Option(names = {"-p", "--project"}) String project;
+    }
+
+    @Command
+    static class Issue947Cmd {
+        @ArgGroup(multiplicity = "1", exclusive = false)
+        Issue947RequireOneOrBothNotNoneGroup group;
+    }
+
+    @Test
+    public void testIssue947RequireOneOrBothNotNone() {
+        Issue947Cmd ok1 = CommandLine.populateCommand(new Issue947Cmd(), "--project", "Foo");
+        assertNotNull(ok1.group);
+        assertEquals("Foo", ok1.group.project);
+        assertNull(ok1.group.feature);
+
+        Issue947Cmd ok2 = CommandLine.populateCommand(new Issue947Cmd(), "--feature", "Bar");
+        assertNotNull(ok2.group);
+        assertNull(ok2.group.project);
+        assertEquals("Bar", ok2.group.feature);
+
+        Issue947Cmd ok3 = CommandLine.populateCommand(new Issue947Cmd(), "--project", "Foo", "--feature", "Bar");
+        assertNotNull(ok3.group);
+        assertEquals("Foo", ok3.group.project);
+        assertEquals("Bar", ok3.group.feature);
+
+        try {
+            CommandLine.populateCommand(new Issue947Cmd());
+            fail("Expected exception");
+        } catch (ParameterException ok) {
+            assertEquals("Error: Missing required argument(s): ([-f=<feature>] [-p=<project>])", ok.getMessage());
+        }
+    }
 }
